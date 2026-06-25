@@ -30,13 +30,13 @@ function readScores(string $file): array {
     return is_array($data) ? $data : [];
 }
 
-const ALLOWED_IMAGES = ['molen', 'badeendje', 'rubiks-cube', 'zeilboot', 'luchtballon', 'ijsje', 'vuurtoren', 'tulp', 'voetbal'];
+const ALLOWED_IMAGES = ['papegaai', 'molen', 'luchtballon', 'zonnebloem', 'dolfijn', 'vuurtoren', 'strand', 'auto', 'raket'];
 
 function publicRanking(array $scores): array {
     usort($scores, fn($a, $b) => ($a['time'] <=> $b['time']) ?: ($a['moves'] <=> $b['moves']));
     return array_map(fn($score) => [
         'id' => $score['id'], 'name' => $score['name'], 'time' => $score['time'],
-        'moves' => $score['moves'], 'date' => $score['date'], 'image' => $score['image'] ?? 'molen',
+        'moves' => $score['moves'], 'date' => $score['date'], 'image' => $score['image'] ?? 'papegaai',
     ], array_slice($scores, 0, 10));
 }
 
@@ -60,7 +60,7 @@ $time = (int)($input['time'] ?? 0);
 $moves = (int)($input['moves'] ?? 0);
 $id = preg_replace('/[^a-zA-Z0-9-]/', '', (string)($input['id'] ?? ''));
 $image = (string)($input['image'] ?? '');
-if (!in_array($image, ALLOWED_IMAGES, true)) { $image = 'molen'; }
+if (!in_array($image, ALLOWED_IMAGES, true)) { $image = 'papegaai'; }
 
 if ($name === '' || strlen($name) > 80 || $time < 300 || $time > 7200000 || $moves < 1 || $moves > 50000 || $id === '' || strlen($id) > 100) {
     http_response_code(422);

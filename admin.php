@@ -208,7 +208,7 @@ unset($_SESSION['notice']);
             <?php foreach ($scores as $index => $score): ?>
               <tr>
                 <td class="rank"><?= str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT) ?></td>
-                <td><img class="avatar-img" src="assets/gallery/<?= e((string)($score['image'] ?? 'molen')) ?>.svg" alt="" width="32" height="32"></td>
+                <td><img class="avatar-img" src="assets/gallery/<?= e((string)($score['image'] ?? 'papegaai')) ?>.jpg" alt="" width="32" height="32"></td>
                 <td><strong><?= e((string)($score['name'] ?? '')) ?></strong></td>
                 <td><?= (int)($score['moves'] ?? 0) ?></td>
                 <td class="time"><?= e(formatAdminTime((int)($score['time'] ?? 0))) ?></td>

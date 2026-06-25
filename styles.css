@@ -136,6 +136,11 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
 .toast.show{transform:translate(-50%,0)}
 
 @keyframes slideIn{from{opacity:0;transform:translateY(8px)}}
+@keyframes confetti-fall{
+  0%{transform:translateY(-12vh) rotate(0deg);opacity:0}
+  8%{opacity:.85}
+  100%{transform:translateY(108vh) rotate(420deg);opacity:0}
+}
 
 @media(max-width:900px){
   .hero{grid-template-columns:1fr;padding-top:60px}

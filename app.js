@@ -2,15 +2,15 @@ import { neighbours, isSolved, shuffledBoard, trySwap, formatTime } from './puzz
 import { fetchRanking, saveScore } from './api-client.js';
 
 const GALLERY = [
-  { id: 'molen', name: 'Molen', src: 'assets/gallery/molen.svg' },
-  { id: 'badeendje', name: 'Badeendje', src: 'assets/gallery/badeendje.svg' },
-  { id: 'rubiks-cube', name: "Rubik's cube", src: 'assets/gallery/rubiks-cube.svg' },
-  { id: 'zeilboot', name: 'Zeilboot', src: 'assets/gallery/zeilboot.svg' },
-  { id: 'luchtballon', name: 'Luchtballon', src: 'assets/gallery/luchtballon.svg' },
-  { id: 'ijsje', name: 'Ijsje', src: 'assets/gallery/ijsje.svg' },
-  { id: 'vuurtoren', name: 'Vuurtoren', src: 'assets/gallery/vuurtoren.svg' },
-  { id: 'tulp', name: 'Tulp', src: 'assets/gallery/tulp.svg' },
-  { id: 'voetbal', name: 'Voetbal', src: 'assets/gallery/voetbal.svg' },
+  { id: 'papegaai', name: 'Papegaai', src: 'assets/gallery/papegaai.jpg' },
+  { id: 'molen', name: 'Molen', src: 'assets/gallery/molen.jpg' },
+  { id: 'luchtballon', name: 'Luchtballon', src: 'assets/gallery/luchtballon.jpg' },
+  { id: 'zonnebloem', name: 'Zonnebloem', src: 'assets/gallery/zonnebloem.jpg' },
+  { id: 'dolfijn', name: 'Dolfijn', src: 'assets/gallery/dolfijn.jpg' },
+  { id: 'vuurtoren', name: 'Vuurtoren', src: 'assets/gallery/vuurtoren.jpg' },
+  { id: 'strand', name: 'Strand', src: 'assets/gallery/strand.jpg' },
+  { id: 'auto', name: 'Auto', src: 'assets/gallery/auto.jpg' },
+  { id: 'raket', name: 'Raket', src: 'assets/gallery/raket.jpg' },
 ];
 
 const $ = (selector) => document.querySelector(selector);
@@ -109,6 +109,81 @@ function playSlideSound() {
   oscillator.stop(now + 0.14);
 }
 
+// --- Applaus bij een opgeloste puzzel: laagjes gefilterde noise, geen audiobestand nodig. ---
+function playApplause() {
+  audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+  const duration = 1.4;
+  const bufferSize = Math.floor(audioContext.sampleRate * duration);
+  const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+  const now = audioContext.currentTime;
+
+  const wash = audioContext.createBufferSource();
+  wash.buffer = buffer;
+  const washFilter = audioContext.createBiquadFilter();
+  washFilter.type = 'bandpass';
+  washFilter.frequency.value = 2200;
+  washFilter.Q.value = 0.6;
+  const washGain = audioContext.createGain();
+  washGain.gain.setValueAtTime(0, now);
+  washGain.gain.linearRampToValueAtTime(0.16, now + 0.15);
+  washGain.gain.linearRampToValueAtTime(0.1, now + 0.7);
+  washGain.gain.linearRampToValueAtTime(0.0001, now + duration);
+  wash.connect(washFilter).connect(washGain).connect(audioContext.destination);
+  wash.start(now);
+  wash.stop(now + duration);
+
+  for (let i = 0; i < 16; i++) {
+    const t = now + Math.random() * duration * 0.85;
+    const clap = audioContext.createBufferSource();
+    clap.buffer = buffer;
+    const clapFilter = audioContext.createBiquadFilter();
+    clapFilter.type = 'bandpass';
+    clapFilter.frequency.value = 1800 + Math.random() * 1800;
+    clapFilter.Q.value = 1.2;
+    const clapGain = audioContext.createGain();
+    clapGain.gain.setValueAtTime(0, t);
+    clapGain.gain.linearRampToValueAtTime(0.1 + Math.random() * 0.08, t + 0.008);
+    clapGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+    clap.connect(clapFilter).connect(clapGain).connect(audioContext.destination);
+    clap.start(t);
+    clap.stop(t + 0.1);
+  }
+}
+
+// --- Subtiele confetti die vanaf de bovenkant naar beneden dwarrelt. ---
+function spawnConfetti() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors = ['#0a84ff', '#5e5ce6', '#ff375f', '#ffd60a', '#34c759'];
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.inset = '0';
+  container.style.pointerEvents = 'none';
+  container.style.zIndex = '50';
+  container.style.overflow = 'hidden';
+  for (let i = 0; i < 26; i++) {
+    const piece = document.createElement('span');
+    const size = 6 + Math.random() * 5;
+    piece.style.position = 'absolute';
+    piece.style.top = '-20px';
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.width = `${size}px`;
+    piece.style.height = `${size * 0.4}px`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.borderRadius = '2px';
+    piece.style.opacity = '0.8';
+    const duration = 2.6 + Math.random() * 1.6;
+    const delay = Math.random() * 0.4;
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    piece.style.animation = `confetti-fall ${duration}s ${delay}s ease-in forwards`;
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 4600);
+}
+
 function moveTile(value) {
   if (!state.playing) return;
   const next = trySwap(state.board, state.size, value);
@@ -160,6 +235,8 @@ async function finishGame() {
   cancelAnimationFrame(state.timerFrame);
   stopButton.disabled = true;
   frame.className = 'puzzle-frame is-ready';
+  playApplause();
+  spawnConfetti();
   coverTitle.innerHTML = 'Mooi gedaan!<br>Nog een ronde?';
   coverSubtitle.textContent = 'Klik om opnieuw te beginnen';
   coverStartButton.hidden = false;
