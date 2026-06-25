@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f2ede5">
+  <title>Schuifpuzzel</title>
+  <meta name="description" content="Een online schuifpuzzel met instelbare moeilijkheidsgraad en eigen foto.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#">Schuifpuzzel</a>
+    <span class="edition">Speel, schuif, klok je tijd</span>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> NIEUW SPEL</p>
+        <h1>Schuif jezelf<br>naar de <em>top.</em></h1>
+        <p class="intro">Kies een moeilijkheidsgraad, upload eventueel je eigen foto en leg de puzzel zo snel mogelijk. Je tijd en aantal zetten worden bijgehouden in de ranglijst.</p>
+
+        <form id="setup-form" class="setup-form">
+          <fieldset class="field-group">
+            <legend>Moeilijkheidsgraad</legend>
+            <div class="size-options" id="size-options">
+              <label><input type="radio" name="size" value="3" checked><span>Makkelijk<small>3 × 3</small></span></label>
+              <label><input type="radio" name="size" value="4"><span>Gemiddeld<small>4 × 4</small></span></label>
+              <label><input type="radio" name="size" value="5"><span>Moeilijk<small>5 × 5</small></span></label>
+              <label><input type="radio" name="size" value="6"><span>Expert<small>6 × 6</small></span></label>
+            </div>
+          </fieldset>
+
+          <div class="field-group">
+            <label class="upload-label" for="image-upload">Eigen foto (optioneel)</label>
+            <div class="upload-row">
+              <input id="image-upload" type="file" accept="image/*">
+              <button type="button" id="reset-image" class="text-button">Standaardfoto gebruiken</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="name">Jouw naam</label>
+            <input id="name" name="name" maxlength="40" autocomplete="name" placeholder="Bijv. Lisa de Vries" required>
+          </div>
+
+          <button class="button button-dark" type="submit">Klaar om te starten <span>→</span></button>
+        </form>
+
+        <div id="ready-panel" class="ready-panel" hidden>
+          <div><span>Klaar voor de start</span><strong id="player-greeting"></strong></div>
+          <button id="start-button" class="button button-blue">Start de puzzel <span>→</span></button>
+          <button id="change-player" class="text-button">Instellingen wijzigen</button>
+        </div>
+      </div>
+
+      <div class="game-column">
+        <div class="game-topbar">
+          <div class="stat"><span>TIJD</span><strong id="timer">00:00.0</strong></div>
+          <div class="stat stat-center"><span>NIVEAU</span><strong id="level-label">3 × 3</strong></div>
+          <div class="stat stat-right"><span>ZETTEN</span><strong id="moves">—</strong></div>
+        </div>
+
+        <div id="puzzle-frame" class="puzzle-frame is-locked">
+          <div id="puzzle" class="puzzle" aria-label="Schuifpuzzel"></div>
+          <div id="puzzle-cover" class="puzzle-cover">
+            <span id="cover-size">3 × 3</span>
+            <strong>Kies je niveau<br>en begin te schuiven.</strong>
+            <small>Vul je naam in om te beginnen</small>
+          </div>
+        </div>
+
+        <div class="game-actions">
+          <button id="stop-button" class="button button-outline" disabled>Stop poging</button>
+          <p>Klik of gebruik je pijltjestoetsen<br>om de stenen te verschuiven.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="leaderboard-section">
+      <div class="leaderboard-heading">
+        <div><p class="eyebrow"><span></span> HALL OF FAME</p><h2>De snelste<br>schuivers.</h2></div>
+        <div class="leaderboard-tabs" id="leaderboard-tabs">
+          <button type="button" class="tab is-active" data-size="3">3 × 3</button>
+          <button type="button" class="tab" data-size="4">4 × 4</button>
+          <button type="button" class="tab" data-size="5">5 × 5</button>
+          <button type="button" class="tab" data-size="6">6 × 6</button>
+        </div>
+      </div>
+      <div class="leaderboard-card">
+        <div class="table-head"><span>POS.</span><span>SPELER</span><span>ZETTEN</span><span>TIJD</span></div>
+        <ol id="leaderboard" class="leaderboard" aria-live="polite"></ol>
+        <p id="empty-ranking" class="empty-ranking" hidden>Nog geen tijden op dit niveau. Jij kunt de eerste zijn.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>Schuifpuzzel</span><span>Gemaakt om snel te spelen, makkelijk te optimaliseren.</span></footer>
+
+  <dialog id="result-dialog" class="result-dialog">
+    <button id="close-dialog" class="dialog-close" aria-label="Sluiten">×</button>
+    <p class="eyebrow"><span></span> PUZZEL VOLTOOID</p>
+    <h2 id="result-title">Lekker geschoven!</h2>
+    <div class="result-time"><span>JOUW TIJD</span><strong id="final-time">00:00.0</strong></div>
+    <p id="result-message"></p>
+    <button id="play-again" class="button button-blue">Nog een keer <span>↻</span></button>
+    <a href="#ranking" id="view-ranking" class="text-button">Bekijk de ranglijst</a>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
