@@ -30,11 +30,13 @@ function readScores(string $file): array {
     return is_array($data) ? $data : [];
 }
 
+const ALLOWED_IMAGES = ['molen', 'badeendje', 'rubiks-cube', 'zeilboot', 'luchtballon', 'ijsje', 'vuurtoren', 'tulp', 'voetbal'];
+
 function publicRanking(array $scores): array {
     usort($scores, fn($a, $b) => ($a['time'] <=> $b['time']) ?: ($a['moves'] <=> $b['moves']));
     return array_map(fn($score) => [
         'id' => $score['id'], 'name' => $score['name'], 'time' => $score['time'],
-        'moves' => $score['moves'], 'date' => $score['date'],
+        'moves' => $score['moves'], 'date' => $score['date'], 'image' => $score['image'] ?? 'molen',
     ], array_slice($scores, 0, 10));
 }
 
@@ -57,6 +59,8 @@ $name = trim((string)($input['name'] ?? ''));
 $time = (int)($input['time'] ?? 0);
 $moves = (int)($input['moves'] ?? 0);
 $id = preg_replace('/[^a-zA-Z0-9-]/', '', (string)($input['id'] ?? ''));
+$image = (string)($input['image'] ?? '');
+if (!in_array($image, ALLOWED_IMAGES, true)) { $image = 'molen'; }
 
 if ($name === '' || strlen($name) > 80 || $time < 300 || $time > 7200000 || $moves < 1 || $moves > 50000 || $id === '' || strlen($id) > 100) {
     http_response_code(422);
@@ -65,7 +69,7 @@ if ($name === '' || strlen($name) > 80 || $time < 300 || $time > 7200000 || $mov
 }
 
 $scores = readScores($dataFile);
-$scores[] = ['id' => $id, 'name' => $name, 'time' => $time, 'moves' => $moves, 'date' => gmdate('c')];
+$scores[] = ['id' => $id, 'name' => $name, 'time' => $time, 'moves' => $moves, 'image' => $image, 'date' => gmdate('c')];
 usort($scores, fn($a, $b) => ($a['time'] <=> $b['time']) ?: ($a['moves'] <=> $b['moves']));
 $scores = array_slice($scores, 0, 500);
 

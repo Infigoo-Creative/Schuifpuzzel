@@ -27,7 +27,7 @@ export async function saveScore(size, entry) {
     return { ranking: await response.json(), persisted: true };
   } catch {
     const local = JSON.parse(localStorage.getItem(localKey(size)) || '[]');
-    local.push({ id: entry.id, name: entry.name, time: entry.time, moves: entry.moves, date: new Date().toISOString() });
+    local.push({ id: entry.id, name: entry.name, time: entry.time, moves: entry.moves, image: entry.image, date: new Date().toISOString() });
     local.sort((a, b) => a.time - b.time || a.moves - b.moves);
     const trimmed = local.slice(0, 10);
     localStorage.setItem(localKey(size), JSON.stringify(trimmed));

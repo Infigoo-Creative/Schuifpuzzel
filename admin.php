@@ -156,6 +156,7 @@ unset($_SESSION['notice']);
     .table th{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:#85827d}
     .rank{font-weight:700;color:var(--blue)}
     .time{font-weight:750;font-variant-numeric:tabular-nums}
+    .avatar-img{border-radius:8px;display:block;object-fit:cover}
     .trash{width:39px;height:39px;border:0;border-radius:50%;background:#fff0f2;color:var(--coral);display:grid;place-items:center;cursor:pointer}
     .trash:hover{background:var(--coral);color:#fff}
     .trash svg{width:17px;height:17px}
@@ -202,11 +203,12 @@ unset($_SESSION['notice']);
           <p class="empty">Er zijn nog geen deelnemers opgeslagen op dit niveau.</p>
         <?php else: ?>
           <table class="table">
-            <thead><tr><th>Pos.</th><th>Naam</th><th>Zetten</th><th>Tijd</th><th>Datum</th><th></th></tr></thead>
+            <thead><tr><th>Pos.</th><th></th><th>Naam</th><th>Zetten</th><th>Tijd</th><th>Datum</th><th></th></tr></thead>
             <tbody>
             <?php foreach ($scores as $index => $score): ?>
               <tr>
                 <td class="rank"><?= str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT) ?></td>
+                <td><img class="avatar-img" src="assets/gallery/<?= e((string)($score['image'] ?? 'molen')) ?>.svg" alt="" width="32" height="32"></td>
                 <td><strong><?= e((string)($score['name'] ?? '')) ?></strong></td>
                 <td><?= (int)($score['moves'] ?? 0) ?></td>
                 <td class="time"><?= e(formatAdminTime((int)($score['time'] ?? 0))) ?></td>

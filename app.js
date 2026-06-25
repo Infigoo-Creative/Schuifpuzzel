@@ -1,26 +1,43 @@
 import { neighbours, isSolved, shuffledBoard, trySwap, formatTime } from './puzzle.js';
 import { fetchRanking, saveScore } from './api-client.js';
 
-const DEFAULT_IMAGE = 'assets/puzzle-default.png';
-const SIZES = [3, 4, 5, 6];
+const GALLERY = [
+  { id: 'molen', name: 'Molen', src: 'assets/gallery/molen.svg' },
+  { id: 'badeendje', name: 'Badeendje', src: 'assets/gallery/badeendje.svg' },
+  { id: 'rubiks-cube', name: "Rubik's cube", src: 'assets/gallery/rubiks-cube.svg' },
+  { id: 'zeilboot', name: 'Zeilboot', src: 'assets/gallery/zeilboot.svg' },
+  { id: 'luchtballon', name: 'Luchtballon', src: 'assets/gallery/luchtballon.svg' },
+  { id: 'ijsje', name: 'Ijsje', src: 'assets/gallery/ijsje.svg' },
+  { id: 'vuurtoren', name: 'Vuurtoren', src: 'assets/gallery/vuurtoren.svg' },
+  { id: 'tulp', name: 'Tulp', src: 'assets/gallery/tulp.svg' },
+  { id: 'voetbal', name: 'Voetbal', src: 'assets/gallery/voetbal.svg' },
+];
 
 const $ = (selector) => document.querySelector(selector);
 const puzzle = $('#puzzle');
 const frame = $('#puzzle-frame');
 const setupForm = $('#setup-form');
-const readyPanel = $('#ready-panel');
+const playerBar = $('#player-bar');
 const timerEl = $('#timer');
 const movesEl = $('#moves');
 const levelLabel = $('#level-label');
 const coverSize = $('#cover-size');
+const coverTitle = $('#cover-title');
+const coverSubtitle = $('#cover-subtitle');
+const coverStartButton = $('#cover-start-button');
+const puzzleCover = $('#puzzle-cover');
 const stopButton = $('#stop-button');
 const dialog = $('#result-dialog');
-const imageInput = $('#image-upload');
-const resetImageButton = $('#reset-image');
+const galleryDialog = $('#gallery-dialog');
+const galleryGrid = $('#gallery-grid');
+const openGalleryButton = $('#open-gallery');
+const photoPickerPreview = $('#photo-picker-preview');
+const photoPickerName = $('#photo-picker-name');
 
 const state = {
   size: 3,
-  image: DEFAULT_IMAGE,
+  imageId: GALLERY[0].id,
+  image: GALLERY[0].src,
   board: [],
   player: null,
   playing: false,
@@ -68,6 +85,30 @@ function renderBoard(animate = true) {
   });
 }
 
+// --- Geluid: doffe houten "thunk", geen audiobestand nodig. ---
+let audioContext = null;
+function playSlideSound() {
+  audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
+  const now = audioContext.currentTime;
+
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  const filter = audioContext.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(900, now);
+
+  oscillator.type = 'triangle';
+  oscillator.frequency.setValueAtTime(130, now);
+  oscillator.frequency.exponentialRampToValueAtTime(60, now + 0.1);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.18, now + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+  oscillator.connect(filter).connect(gain).connect(audioContext.destination);
+  oscillator.start(now);
+  oscillator.stop(now + 0.14);
+}
+
 function moveTile(value) {
   if (!state.playing) return;
   const next = trySwap(state.board, state.size, value);
@@ -76,10 +117,12 @@ function moveTile(value) {
   state.moves++;
   movesEl.textContent = state.moves;
   renderBoard();
+  playSlideSound();
   if (isSolved(state.board)) finishGame();
 }
 
 function startGame() {
+  coverStartButton.hidden = true;
   state.board = shuffledBoard(state.size);
   buildTiles();
   state.moves = 0;
@@ -89,7 +132,6 @@ function startGame() {
   frame.className = 'puzzle-frame is-playing';
   state.playing = true;
   stopButton.disabled = false;
-  $('#start-button').disabled = true;
   state.startTime = performance.now();
   tick();
 }
@@ -106,8 +148,10 @@ function stopGame() {
   state.playing = false;
   cancelAnimationFrame(state.timerFrame);
   stopButton.disabled = true;
-  $('#start-button').disabled = false;
   frame.className = 'puzzle-frame is-ready';
+  coverTitle.innerHTML = 'Poging gestopt.<br>Probeer het nog eens.';
+  coverSubtitle.textContent = 'Deze tijd telt niet mee';
+  coverStartButton.hidden = false;
   showToast('Poging gestopt — deze tijd telt niet mee.');
 }
 
@@ -115,11 +159,19 @@ async function finishGame() {
   state.playing = false;
   cancelAnimationFrame(state.timerFrame);
   stopButton.disabled = true;
-  $('#start-button').disabled = false;
-  frame.className = 'puzzle-frame';
+  frame.className = 'puzzle-frame is-ready';
+  coverTitle.innerHTML = 'Mooi gedaan!<br>Nog een ronde?';
+  coverSubtitle.textContent = 'Klik om opnieuw te beginnen';
+  coverStartButton.hidden = false;
   state.currentEntryId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-  const entry = { id: state.currentEntryId, name: state.player.name, time: Math.round(state.elapsed), moves: state.moves };
+  const entry = {
+    id: state.currentEntryId,
+    name: state.player.name,
+    time: Math.round(state.elapsed),
+    moves: state.moves,
+    image: state.imageId,
+  };
   const { ranking, persisted } = await saveScore(state.size, entry);
   if (!persisted) showToast('Demo-modus: score is alleen op dit apparaat bewaard.');
   if (state.activeLeaderboardSize === state.size) renderLeaderboard(ranking);
@@ -133,6 +185,10 @@ async function finishGame() {
   dialog.showModal();
 }
 
+function imageSrcFor(imageId) {
+  return GALLERY.find((item) => item.id === imageId)?.src ?? GALLERY[0].src;
+}
+
 function renderLeaderboard(entries) {
   const list = $('#leaderboard');
   list.innerHTML = '';
@@ -140,7 +196,7 @@ function renderLeaderboard(entries) {
   entries.slice(0, 10).forEach((entry, index) => {
     const li = document.createElement('li');
     if (entry.id === state.currentEntryId) li.className = 'is-current';
-    li.innerHTML = `<span class="position">${String(index + 1).padStart(2, '0')}</span><span class="name"></span><span class="move-count">${entry.moves}</span><span class="time">${formatTime(entry.time)}</span>`;
+    li.innerHTML = `<span class="position">${String(index + 1).padStart(2, '0')}</span><span class="avatar"><img src="${imageSrcFor(entry.image)}" alt=""></span><span class="name"></span><span class="move-count">${entry.moves}</span><span class="time">${formatTime(entry.time)}</span>`;
     li.querySelector('.name').textContent = entry.name;
     list.appendChild(li);
   });
@@ -161,28 +217,68 @@ function showToast(message) {
   toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
+function updateCoverPreview() {
+  puzzleCover.style.backgroundImage = `linear-gradient(140deg,rgba(10,30,90,.62),rgba(94,92,230,.7)), url('${state.image}')`;
+  const label = `${state.size} × ${state.size}`;
+  coverSize.textContent = label;
+  levelLabel.textContent = label;
+}
+
+function selectImage(imageId) {
+  const item = GALLERY.find((entry) => entry.id === imageId);
+  if (!item) return;
+  state.imageId = item.id;
+  state.image = item.src;
+  photoPickerPreview.src = item.src;
+  photoPickerName.textContent = item.name;
+  updateCoverPreview();
+}
+
+function renderGallery() {
+  galleryGrid.innerHTML = '';
+  GALLERY.forEach((item) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'gallery-item';
+    button.innerHTML = `<img src="${item.src}" alt="${item.name}"><span>${item.name}</span>`;
+    button.addEventListener('click', () => {
+      selectImage(item.id);
+      galleryDialog.close();
+    });
+    galleryGrid.appendChild(button);
+  });
+}
+
+setupForm.addEventListener('change', (event) => {
+  if (event.target.name === 'size') {
+    state.size = Number(new FormData(setupForm).get('size'));
+    updateCoverPreview();
+  }
+});
+
 setupForm.addEventListener('submit', (event) => {
   event.preventDefault();
   if (!setupForm.reportValidity()) return;
   state.size = Number(new FormData(setupForm).get('size'));
   state.player = { name: $('#name').value.trim() };
-  const label = `${state.size} × ${state.size}`;
   $('#player-greeting').textContent = state.player.name;
-  levelLabel.textContent = label;
-  coverSize.textContent = label;
+  updateCoverPreview();
   setupForm.hidden = true;
-  readyPanel.hidden = false;
-  frame.className = 'puzzle-frame is-ready';
-  $('#puzzle-cover small').textContent = 'Klaar om te starten';
+  playerBar.hidden = false;
   loadLeaderboard(state.size);
+  startGame();
 });
 
 $('#change-player').addEventListener('click', () => {
-  readyPanel.hidden = true;
+  if (state.playing) stopGame();
+  playerBar.hidden = true;
   setupForm.hidden = false;
+  coverStartButton.hidden = true;
+  coverTitle.innerHTML = 'Kies je niveau<br>en begin te schuiven.';
+  coverSubtitle.textContent = 'Vul je naam in om te beginnen';
   frame.className = 'puzzle-frame is-locked';
 });
-$('#start-button').addEventListener('click', startGame);
+coverStartButton.addEventListener('click', startGame);
 stopButton.addEventListener('click', stopGame);
 $('#close-dialog').addEventListener('click', () => dialog.close());
 $('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
@@ -192,18 +288,8 @@ document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => loadLeaderboard(Number(tab.dataset.size)));
 });
 
-imageInput.addEventListener('change', () => {
-  const file = imageInput.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => { state.image = reader.result; };
-  reader.readAsDataURL(file);
-});
-
-resetImageButton.addEventListener('click', () => {
-  state.image = DEFAULT_IMAGE;
-  imageInput.value = '';
-});
+openGalleryButton.addEventListener('click', () => galleryDialog.showModal());
+$('#close-gallery').addEventListener('click', () => galleryDialog.close());
 
 document.addEventListener('keydown', (event) => {
   if (!state.playing) return;
@@ -221,4 +307,30 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
+/* Geparkeerd voor later: eigen foto uploaden. UI is uit index.html gehaald,
+   maar deze functies blijven staan zodat de feature makkelijk terug te zetten is.
+   Verwacht dan weer een <input id="image-upload"> en <button id="reset-image"> in de pagina.
+
+function wireImageUpload() {
+  const imageInput = $('#image-upload');
+  const resetImageButton = $('#reset-image');
+  imageInput.addEventListener('change', () => {
+    const file = imageInput.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      state.imageId = null;
+      state.image = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  resetImageButton.addEventListener('click', () => {
+    selectImage(GALLERY[0].id);
+    imageInput.value = '';
+  });
+}
+*/
+
+renderGallery();
+updateCoverPreview();
 loadLeaderboard(state.size);
