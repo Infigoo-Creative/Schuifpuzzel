@@ -26,6 +26,7 @@ const frame = $('#puzzle-frame');
 const setupForm = $('#setup-form');
 const playerBar = $('#player-bar');
 const timerEl = $('#timer');
+const timerMultiplier = $('#timer-multiplier');
 const movesEl = $('#moves');
 const levelLabel = $('#level-label');
 const coverSize = $('#cover-size');
@@ -225,6 +226,12 @@ function setHelpActive(active) {
   puzzle.classList.toggle('show-numbers', active);
   helpButton.classList.toggle('is-active', active);
   helpButton.textContent = active ? 'Stop help' : 'Help';
+  timerEl.classList.toggle('is-fast', active);
+  timerMultiplier.hidden = !active;
+  // Korte "pulse" op de tijd zodat duidelijk is dat hij nu sneller gaat lopen.
+  timerEl.classList.remove('pulse');
+  void timerEl.offsetWidth;
+  timerEl.classList.add('pulse');
 }
 
 function startGame() {
