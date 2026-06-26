@@ -489,6 +489,7 @@ function renderSizeProgress() {
       if (index < done) dot.className = 'is-done';
       container.appendChild(dot);
     });
+    container.closest('.size-label')?.classList.toggle('is-complete', done >= GALLERY.length);
   });
 }
 

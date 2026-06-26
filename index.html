@@ -49,10 +49,10 @@
           <fieldset class="field-group">
             <legend>Moeilijkheidsgraad</legend>
             <div class="size-options" id="size-options">
-              <label><input type="radio" name="size" value="3" checked><span class="size-label">Makkelijk<small>3 × 3</small><span class="size-progress" data-size="3"></span></span></label>
-              <label><input type="radio" name="size" value="4"><span class="size-label">Gemiddeld<small>4 × 4</small><span class="size-progress" data-size="4"></span></span></label>
-              <label><input type="radio" name="size" value="5"><span class="size-label">Moeilijk<small>5 × 5</small><span class="size-progress" data-size="5"></span></span></label>
-              <label><input type="radio" name="size" value="6"><span class="size-label">Expert<small>6 × 6</small><span class="size-progress" data-size="6"></span></span></label>
+              <label><input type="radio" name="size" value="3" checked><span class="size-label">Makkelijk<small>3 × 3</small><span class="size-progress" data-size="3"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
+              <label><input type="radio" name="size" value="4"><span class="size-label">Gemiddeld<small>4 × 4</small><span class="size-progress" data-size="4"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
+              <label><input type="radio" name="size" value="5"><span class="size-label">Moeilijk<small>5 × 5</small><span class="size-progress" data-size="5"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
+              <label><input type="radio" name="size" value="6"><span class="size-label">Expert<small>6 × 6</small><span class="size-progress" data-size="6"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
             </div>
           </fieldset>
 
@@ -82,7 +82,10 @@
 
         <div id="player-bar" class="player-bar" hidden>
           <div><span>Je speelt als</span><strong id="player-greeting"></strong><small id="player-code-hint"></small></div>
-          <button id="change-player" class="text-button">Instellingen wijzigen</button>
+          <button id="change-player" class="settings-button" type="button">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.3 3.2c.4-1.6 2.8-1.6 3.2 0a1.7 1.7 0 0 0 2.5 1.1c1.4-.9 3 .7 2.1 2.1a1.7 1.7 0 0 0 1.1 2.5c1.6.4 1.6 2.8 0 3.2a1.7 1.7 0 0 0-1.1 2.5c.9 1.4-.7 3-2.1 2.1a1.7 1.7 0 0 0-2.5 1.1c-.4 1.6-2.8 1.6-3.2 0a1.7 1.7 0 0 0-2.5-1.1c-1.4.9-3-.7-2.1-2.1a1.7 1.7 0 0 0-1.1-2.5c-1.6-.4-1.6-2.8 0-3.2a1.7 1.7 0 0 0 1.1-2.5c-.9-1.4.7-3 2.1-2.1.9.5 2.1.1 2.5-1.1Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
+            Instellingen wijzigen
+          </button>
         </div>
       </div>
 
