@@ -1,6 +1,12 @@
 import { neighbours, isSolved, shuffledBoard, trySwap, formatTime } from './puzzle.js';
 import { fetchRanking, saveScore } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
+import {
+  getPlayer, registerPlayer, recoverByCode, syncFromServer, markCompleted,
+  countCompletedForSize, totalCompleted, isCompleted,
+} from './progress.js';
+
+const SIZES = [3, 4, 5, 6];
 
 const GALLERY = [
   { id: 'papegaai', name: 'Papegaai', src: 'assets/gallery/papegaai.jpg' },
@@ -34,6 +40,14 @@ const galleryGrid = $('#gallery-grid');
 const openGalleryButton = $('#open-gallery');
 const photoPickerPreview = $('#photo-picker-preview');
 const photoPickerName = $('#photo-picker-name');
+const haveCodeLink = $('#have-code-link');
+const codeField = $('#code-field');
+const playerCodeInput = $('#player-code');
+const playerCodeHint = $('#player-code-hint');
+const codeDialog = $('#code-dialog');
+const codeDisplay = $('#code-display');
+const progressFill = $('#progress-fill');
+const progressText = $('#progress-text');
 
 const state = {
   size: 3,
@@ -252,6 +266,8 @@ async function finishGame() {
     image: state.imageId,
   };
 
+  const wasAlreadyCompleted = isCompleted(state.size, state.imageId);
+
   let ranking = [];
   let rank = null;
   let context = [];
@@ -266,11 +282,16 @@ async function finishGame() {
   }
   if (state.activeLeaderboardSize === state.size) renderLeaderboard(ranking, rank > 10 ? context : []);
 
+  await markCompleted(state.size, state.imageId);
+  renderProgress();
+
   $('#final-time').textContent = formatTime(state.elapsed);
   $('#result-title').textContent = rank > 0 && rank <= 10 ? `Plek ${rank}. Heel netjes!` : 'Lekker geschoven!';
-  $('#result-message').textContent = rank > 0 && rank <= 10
+  let message = rank > 0 && rank <= 10
     ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
     : `Voltooid in ${state.moves} zetten. Nog één poging en je schuift misschien wél de top 10 binnen.`;
+  if (!wasAlreadyCompleted) message += ' Dit level heb je nu voor het eerst uitgespeeld — badge verdiend!';
+  $('#result-message').textContent = message;
   dialog.showModal();
   playApplause();
   spawnConfetti(dialog);
@@ -328,6 +349,32 @@ function updateCoverPreview() {
   levelLabel.textContent = label;
 }
 
+function renderProgressSummary() {
+  const total = SIZES.length * GALLERY.length;
+  const done = totalCompleted();
+  progressFill.style.width = `${(done / total) * 100}%`;
+  progressText.textContent = `${done} van ${total} levels voltooid`;
+}
+
+function renderSizeProgress() {
+  document.querySelectorAll('.size-progress').forEach((container) => {
+    const size = Number(container.dataset.size);
+    const done = countCompletedForSize(size);
+    container.innerHTML = '';
+    container.setAttribute('aria-label', `${done} van ${GALLERY.length} foto's voltooid op dit niveau`);
+    GALLERY.forEach((_, index) => {
+      const dot = document.createElement('span');
+      if (index < done) dot.className = 'is-done';
+      container.appendChild(dot);
+    });
+  });
+}
+
+function renderProgress() {
+  renderProgressSummary();
+  renderSizeProgress();
+}
+
 function selectImage(imageId) {
   const item = GALLERY.find((entry) => entry.id === imageId);
   if (!item) return;
@@ -338,13 +385,16 @@ function selectImage(imageId) {
   updateCoverPreview();
 }
 
+// Trofee-badge per foto: voltooid op het NU geselecteerde niveau (dus dit moet opnieuw
+// gerenderd worden zodra de moeilijkheidsgraad wijzigt of de gallery weer opent).
 function renderGallery() {
   galleryGrid.innerHTML = '';
   GALLERY.forEach((item) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'gallery-item';
-    button.innerHTML = `<img src="${item.src}" alt="${item.name}"><span>${item.name}</span>`;
+    const badge = isCompleted(state.size, item.id) ? '<span class="trophy-badge" title="Al uitgespeeld op dit niveau">🏆</span>' : '';
+    button.innerHTML = `${badge}<img src="${item.src}" alt="${item.name}"><span>${item.name}</span>`;
     button.addEventListener('click', () => {
       selectImage(item.id);
       galleryDialog.close();
@@ -357,10 +407,35 @@ setupForm.addEventListener('change', (event) => {
   if (event.target.name === 'size') {
     state.size = Number(new FormData(setupForm).get('size'));
     updateCoverPreview();
+    renderGallery();
   }
 });
 
-setupForm.addEventListener('submit', (event) => {
+haveCodeLink.addEventListener('click', () => {
+  codeField.hidden = !codeField.hidden;
+  haveCodeLink.textContent = codeField.hidden ? 'Heb je al een code?' : 'Ik speel zonder code';
+  if (!codeField.hidden) playerCodeInput.focus();
+});
+
+function showPlayerCodeHint() {
+  const player = getPlayer();
+  playerCodeHint.textContent = player ? `Jouw code: ${player.code}` : '';
+}
+
+// Na het invullen van naam (en eventueel code) hier verder: leaderboard laden, UI omzetten
+// naar "aan het spelen" en de puzzel starten.
+function proceedToGame(name) {
+  state.player = { name };
+  $('#player-greeting').textContent = name;
+  showPlayerCodeHint();
+  updateCoverPreview();
+  setupForm.hidden = true;
+  playerBar.hidden = false;
+  loadLeaderboard(state.size);
+  startGame();
+}
+
+setupForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!setupForm.reportValidity()) return;
   const name = $('#name').value.trim();
@@ -369,13 +444,47 @@ setupForm.addEventListener('submit', (event) => {
     return;
   }
   state.size = Number(new FormData(setupForm).get('size'));
-  state.player = { name };
-  $('#player-greeting').textContent = state.player.name;
-  updateCoverPreview();
-  setupForm.hidden = true;
-  playerBar.hidden = false;
-  loadLeaderboard(state.size);
-  startGame();
+
+  const enteredCode = playerCodeInput.value.trim();
+  const existingPlayer = getPlayer();
+
+  if (existingPlayer) {
+    // Dit apparaat heeft al een code: gewoon doorspelen, voortgang is al lokaal bekend.
+    proceedToGame(name);
+    return;
+  }
+
+  if (enteredCode) {
+    if (!/^\d{6}$/.test(enteredCode)) {
+      showToast('Een code bestaat uit 6 cijfers.');
+      return;
+    }
+    const recovered = await recoverByCode(enteredCode);
+    if (!recovered) {
+      showToast('Code niet gevonden — controleer je code.');
+      return;
+    }
+    renderProgress();
+    proceedToGame(name);
+    return;
+  }
+
+  // Eerste keer op dit apparaat, geen code ingevuld: nieuwe code aanmaken en eenmalig tonen.
+  const { code } = await registerPlayer(name);
+  codeDisplay.textContent = code;
+  codeDialog.showModal();
+  codeDialog.dataset.pendingName = name;
+});
+
+$('#confirm-code').addEventListener('click', () => {
+  const name = codeDialog.dataset.pendingName;
+  codeDialog.close();
+  if (name) proceedToGame(name);
+});
+$('#close-code-dialog').addEventListener('click', () => {
+  const name = codeDialog.dataset.pendingName;
+  codeDialog.close();
+  if (name) proceedToGame(name);
 });
 
 $('#change-player').addEventListener('click', () => {
@@ -397,7 +506,10 @@ document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => loadLeaderboard(Number(tab.dataset.size)));
 });
 
-openGalleryButton.addEventListener('click', () => galleryDialog.showModal());
+openGalleryButton.addEventListener('click', () => {
+  renderGallery();
+  galleryDialog.showModal();
+});
 $('#close-gallery').addEventListener('click', () => galleryDialog.close());
 
 document.addEventListener('keydown', (event) => {
@@ -443,3 +555,14 @@ function wireImageUpload() {
 renderGallery();
 updateCoverPreview();
 loadLeaderboard(state.size);
+
+const existingPlayer = getPlayer();
+if (existingPlayer) {
+  $('#name').value = existingPlayer.name;
+  $('.code-recovery').hidden = true;
+}
+syncFromServer().then(() => {
+  renderProgress();
+  renderGallery();
+});
+renderProgress();

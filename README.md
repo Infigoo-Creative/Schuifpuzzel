@@ -1,6 +1,6 @@
 # Schuifpuzzel
 
-Een online schuifpuzzel met instelbare moeilijkheidsgraad (3×3 t/m 6×6), een kiesgalerij met 9 foto's, timer, zettenteller, applaus + confetti bij het oplossen, en een gedeelde top 10 per niveau (met rank-context als je daarbuiten valt).
+Een online schuifpuzzel met instelbare moeilijkheidsgraad (3×3 t/m 6×6), een kiesgalerij met 9 foto's, timer, zettenteller, applaus + confetti bij het oplossen, een gedeelde top 10 per niveau (met rank-context als je daarbuiten valt), en voortgang die bewaard blijft via een persoonlijke 6-cijferige code (geen account nodig).
 
 ## Lokaal bekijken
 
@@ -27,11 +27,25 @@ De meegeleverde `.htaccess`-bestanden blokkeren op Apache directe toegang tot `c
 ## Bestandsoverzicht
 
 - `index.html`, `styles.css` — pagina en vormgeving (Apple-achtige stijl: rond, glaseffect, frisse kleuren).
-- `app.js` — koppelt UI, instellingen en foto-kiezer aan de puzzellogica; regelt ook geluid en confetti.
+- `app.js` — koppelt UI, instellingen en foto-kiezer aan de puzzellogica; regelt ook geluid, confetti en voortgang.
 - `puzzle.js` — pure puzzellogica (schudden, zetten, oplossing checken), los van de DOM.
 - `api-client.js` — praat met `api.php`, met automatische fallback naar `localStorage` (inclusief dezelfde rank/context-structuur).
-- `moderation.js` — clientside blacklist-check voor grove/seksistische namen (directe feedback; `api.php` is de echte poortwachter).
-- `api.php`, `admin.php`, `config.php` — backend voor de gedeelde ranglijst en beheer.
+- `progress.js` — clientside state voor de speler-code en voltooide foto×niveau-combinaties, praat met `progress.php`.
+- `moderation.js` — clientside blacklist-check voor grove/seksistische namen (directe feedback; `shared.php` is de echte poortwachter).
+- `shared.php` — gedeelde constanten/helpers (toegestane formaten/foto's, blacklist, JSON-bestanden lezen/schrijven) voor `api.php` en `progress.php`.
+- `api.php`, `progress.php`, `admin.php`, `config.php` — backend voor de gedeelde ranglijst, voortgang en beheer.
+
+## Voortgang zonder account
+
+Bij de eerste keer naam invullen genereert de server (via `progress.php`) een unieke 6-cijferige code, die lokaal (`localStorage`) onthouden wordt — op dat apparaat/browser is er dus nooit een code nodig. Voltooi je een foto op een niveau (los van leaderboard-positie, gewoon: opgelost), dan wordt die combinatie als "uitgespeeld" gemarkeerd:
+
+- een trofee-badge op de foto in de kiesgalerij (per geselecteerd niveau),
+- stipjes onder elke moeilijkheidsgraad (hoeveel van de 9 foto's op dat niveau klaar zijn),
+- een totaalbalk op de hoofdpagina ("X van 36 levels voltooid").
+
+Op een ander apparaat/browser klik je op "Heb je al een code?" en vul je de code in — de voortgang van die code wordt dan opgehaald en samengevoegd met wat er lokaal al stond. Zonder PHP-server (lokale demo) wordt een code alleen lokaal gegenereerd; cross-device herstel werkt dan niet (logisch, er is dan niets om te delen).
+
+Voortgang staat server-side in `data/progress/{code}.json` — zelfde aandachtspunt als bij scores: laat deze map ongemoeid bij het deployen van updates (zie "Scores en persistentie").
 
 ## Foto's kiezen
 
