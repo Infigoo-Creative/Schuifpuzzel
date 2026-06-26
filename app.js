@@ -74,6 +74,7 @@ const state = {
   timerFrame: null,
   currentEntryId: null,
   activeLeaderboardSize: 3,
+  startAfterPick: false,
 };
 
 function emptyValue(size) {
@@ -521,6 +522,10 @@ function renderGallery() {
     button.addEventListener('click', () => {
       selectImage(item.id);
       galleryDialog.close();
+      if (state.startAfterPick) {
+        state.startAfterPick = false;
+        startGame();
+      }
     });
     galleryGrid.appendChild(button);
   });
@@ -631,24 +636,11 @@ autosolveButton.addEventListener('click', () => {
 });
 $('#close-dialog').addEventListener('click', () => dialog.close());
 $('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
-$('#share-score').addEventListener('click', async () => {
-  const photoName = GALLERY.find((item) => item.id === state.imageId)?.name ?? '';
-  const text = `Ik heb de Slideo-schuifpuzzel (${state.size}×${state.size}, ${photoName}) opgelost in ${formatTime(state.elapsed)} met ${state.moves} zetten. Kan jij het sneller? 🧩`;
-  const url = location.href.split('?')[0].split('#')[0];
-  if (navigator.share) {
-    try {
-      await navigator.share({ text, url });
-    } catch {
-      // Gebruiker annuleerde het deelvenster — geen actie nodig.
-    }
-    return;
-  }
-  try {
-    await navigator.clipboard.writeText(`${text} ${url}`);
-    showToast('Tekst gekopieerd — plak \'m waar je wilt delen.');
-  } catch {
-    showToast('Delen is op dit apparaat niet beschikbaar.');
-  }
+$('#pick-other-photo').addEventListener('click', () => {
+  dialog.close();
+  state.startAfterPick = true;
+  renderGallery();
+  galleryDialog.showModal();
 });
 $('#view-ranking').addEventListener('click', () => { dialog.close(); $('.leaderboard-section').scrollIntoView(); });
 
@@ -660,7 +652,10 @@ openGalleryButton.addEventListener('click', () => {
   renderGallery();
   galleryDialog.showModal();
 });
-$('#close-gallery').addEventListener('click', () => galleryDialog.close());
+$('#close-gallery').addEventListener('click', () => {
+  state.startAfterPick = false;
+  galleryDialog.close();
+});
 
 // Verplaatst de tegel die bij een richting hoort (pijltjestoets of swipe): "omhoog" betekent
 // hetzelfde als de ArrowUp-toets — de tegel ÓNDER de lege plek schuift naar boven, enz.
