@@ -1,5 +1,6 @@
 import { neighbours, isSolved, shuffledBoard, trySwap, formatTime } from './puzzle.js';
 import { fetchRanking, saveScore } from './api-client.js';
+import { containsBannedWord } from './moderation.js';
 
 const GALLERY = [
   { id: 'papegaai', name: 'Papegaai', src: 'assets/gallery/papegaai.jpg' },
@@ -154,7 +155,10 @@ function playApplause() {
 }
 
 // --- Subtiele confetti die vanaf de bovenkant naar beneden dwarrelt. ---
-function spawnConfetti() {
+// target = waar de confetti in de DOM terechtkomt. Een open <dialog> leeft in de browser-
+// "top layer", dus confetti die in document.body terechtkomt, verdwijnt daar visueel onder;
+// door 'm als kind van de dialoog te plaatsen, deelt hij diezelfde top layer en blijft hij zichtbaar.
+function spawnConfetti(target = document.body) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const colors = ['#0a84ff', '#5e5ce6', '#ff375f', '#ffd60a', '#34c759'];
   const container = document.createElement('div');
@@ -180,7 +184,7 @@ function spawnConfetti() {
     piece.style.animation = `confetti-fall ${duration}s ${delay}s ease-in forwards`;
     container.appendChild(piece);
   }
-  document.body.appendChild(container);
+  target.appendChild(container);
   setTimeout(() => container.remove(), 4600);
 }
 
@@ -235,8 +239,6 @@ async function finishGame() {
   cancelAnimationFrame(state.timerFrame);
   stopButton.disabled = true;
   frame.className = 'puzzle-frame is-ready';
-  playApplause();
-  spawnConfetti();
   coverTitle.innerHTML = 'Mooi gedaan!<br>Nog een ronde?';
   coverSubtitle.textContent = 'Klik om opnieuw te beginnen';
   coverStartButton.hidden = false;
@@ -249,34 +251,59 @@ async function finishGame() {
     moves: state.moves,
     image: state.imageId,
   };
-  const { ranking, persisted } = await saveScore(state.size, entry);
-  if (!persisted) showToast('Demo-modus: score is alleen op dit apparaat bewaard.');
-  if (state.activeLeaderboardSize === state.size) renderLeaderboard(ranking);
 
-  const position = ranking.findIndex((item) => item.id === state.currentEntryId) + 1;
+  let ranking = [];
+  let rank = null;
+  let context = [];
+  try {
+    const result = await saveScore(state.size, entry);
+    ranking = result.ranking;
+    rank = result.rank;
+    context = result.context ?? [];
+    if (!result.persisted) showToast('Demo-modus: score is alleen op dit apparaat bewaard.');
+  } catch (error) {
+    showToast(error.message === 'Ongeldige naam' ? 'Score niet opgeslagen: kies een andere naam.' : 'Score kon niet worden opgeslagen.');
+  }
+  if (state.activeLeaderboardSize === state.size) renderLeaderboard(ranking, rank > 10 ? context : []);
+
   $('#final-time').textContent = formatTime(state.elapsed);
-  $('#result-title').textContent = position > 0 && position <= 10 ? `Plek ${position}. Heel netjes!` : 'Lekker geschoven!';
-  $('#result-message').textContent = position > 0 && position <= 10
+  $('#result-title').textContent = rank > 0 && rank <= 10 ? `Plek ${rank}. Heel netjes!` : 'Lekker geschoven!';
+  $('#result-message').textContent = rank > 0 && rank <= 10
     ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
     : `Voltooid in ${state.moves} zetten. Nog één poging en je schuift misschien wél de top 10 binnen.`;
   dialog.showModal();
+  playApplause();
+  spawnConfetti(dialog);
 }
 
 function imageSrcFor(imageId) {
   return GALLERY.find((item) => item.id === imageId)?.src ?? GALLERY[0].src;
 }
 
-function renderLeaderboard(entries) {
+function leaderboardRow(entry, rank) {
+  const li = document.createElement('li');
+  if (entry.id === state.currentEntryId) li.className = 'is-current';
+  li.innerHTML = `<span class="position">${String(rank).padStart(2, '0')}</span><span class="avatar"><img src="${imageSrcFor(entry.image)}" alt=""></span><span class="name"></span><span class="move-count">${entry.moves}</span><span class="time">${formatTime(entry.time)}</span>`;
+  li.querySelector('.name').textContent = entry.name;
+  return li;
+}
+
+// Toont de top 10, en als de huidige speler daarbuiten valt: een "···"-scheiding met
+// een venster van 2 posities erboven en erbeneden, zodat je ziet hoe ver je nog van de top 10 zit.
+function renderLeaderboard(entries, context = []) {
   const list = $('#leaderboard');
   list.innerHTML = '';
   $('#empty-ranking').hidden = entries.length > 0;
   entries.slice(0, 10).forEach((entry, index) => {
-    const li = document.createElement('li');
-    if (entry.id === state.currentEntryId) li.className = 'is-current';
-    li.innerHTML = `<span class="position">${String(index + 1).padStart(2, '0')}</span><span class="avatar"><img src="${imageSrcFor(entry.image)}" alt=""></span><span class="name"></span><span class="move-count">${entry.moves}</span><span class="time">${formatTime(entry.time)}</span>`;
-    li.querySelector('.name').textContent = entry.name;
-    list.appendChild(li);
+    list.appendChild(leaderboardRow(entry, entry.rank ?? index + 1));
   });
+  if (context.length > 0) {
+    const gap = document.createElement('li');
+    gap.className = 'rank-gap';
+    gap.innerHTML = '<span></span><span></span><span>···</span><span></span><span></span>';
+    list.appendChild(gap);
+    context.forEach((entry) => list.appendChild(leaderboardRow(entry, entry.rank)));
+  }
 }
 
 async function loadLeaderboard(size) {
@@ -336,8 +363,13 @@ setupForm.addEventListener('change', (event) => {
 setupForm.addEventListener('submit', (event) => {
   event.preventDefault();
   if (!setupForm.reportValidity()) return;
+  const name = $('#name').value.trim();
+  if (containsBannedWord(name)) {
+    showToast('Kies een andere naam — dit woord is niet toegestaan.');
+    return;
+  }
   state.size = Number(new FormData(setupForm).get('size'));
-  state.player = { name: $('#name').value.trim() };
+  state.player = { name };
   $('#player-greeting').textContent = state.player.name;
   updateCoverPreview();
   setupForm.hidden = true;

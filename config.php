@@ -1,3 +1,4 @@
 <?php
-// Verander dit wachtwoord vóór livegang. Gebruik een lang, uniek wachtwoord.
-$adminPassword = 'Schuifpuzzel!Beheer-7K4P-2026';
+// Inloggegevens voor /admin.php. Verander deze gerust later opnieuw.
+$adminUsername = 'infigoo-beheer';
+$adminPassword = 'Mnpe5ANl5oHFpmnN0gjq';

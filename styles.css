@@ -111,6 +111,8 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .leaderboard .time{font:700 17px "Manrope";font-variant-numeric:tabular-nums;text-align:right}
 .leaderboard li:first-child .position,.leaderboard li:first-child .time{color:#7ab8ff}
 .leaderboard li.is-current{background:rgba(94,92,230,.18)}
+.leaderboard li.rank-gap{height:34px;color:#5c5c63;font:700 13px "Manrope";letter-spacing:.2em;animation:none}
+.leaderboard li.rank-gap span:nth-child(3){grid-column:1/3}
 .empty-ranking{padding:40px 14px;color:#86868b;font-size:13px}
 
 footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-content:space-between;font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#6e6e73}

@@ -87,14 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? '');
 
     if ($action === 'login') {
+        $username = (string)($_POST['username'] ?? '');
         $password = (string)($_POST['password'] ?? '');
-        if (hash_equals((string)$adminPassword, $password)) {
+        if (hash_equals((string)$adminUsername, $username) && hash_equals((string)$adminPassword, $password)) {
             session_regenerate_id(true);
             $_SESSION['admin'] = true;
             $_SESSION['csrf'] = bin2hex(random_bytes(24));
             redirectAdmin($size);
         }
-        $error = 'Het wachtwoord is niet juist.';
+        $error = 'Gebruikersnaam of wachtwoord is niet juist.';
     } elseif (!empty($_SESSION['admin'])) {
         if (!hash_equals((string)$_SESSION['csrf'], (string)($_POST['csrf'] ?? ''))) {
             http_response_code(403);
@@ -176,8 +177,10 @@ unset($_SESSION['notice']);
       <form method="post">
         <input type="hidden" name="action" value="login">
         <input type="hidden" name="size" value="<?= $size ?>">
+        <label for="username">Gebruikersnaam</label>
+        <input id="username" name="username" type="text" autocomplete="username" required autofocus>
         <label for="password">Beheerwachtwoord</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
         <button class="primary" type="submit">Inloggen →</button>
       </form>
     </main>
