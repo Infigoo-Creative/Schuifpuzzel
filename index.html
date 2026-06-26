@@ -10,13 +10,27 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    // Vóór de eerste paint het thema instellen, zodat de pagina niet eerst licht opflitst.
+    try {
+      const saved = localStorage.getItem('schuifpuzzel-theme');
+      const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    } catch {}
+  </script>
 </head>
 <body>
   <div class="grain" aria-hidden="true"></div>
 
   <header class="site-header">
     <a class="brand" href="#"><img src="assets/logo.svg" alt="Schuifpuzzel" height="28"></a>
-    <span class="edition">Speel, schuif, klok je tijd</span>
+    <div class="header-right">
+      <span class="edition">Speel, schuif, klok je tijd</span>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Donkere modus aan/uit">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/></svg>
+      </button>
+    </div>
   </header>
 
   <main>
@@ -127,6 +141,7 @@
     <div class="result-time"><span>JOUW TIJD</span><strong id="final-time">00:00.0</strong></div>
     <p id="result-message"></p>
     <button id="next-challenge" class="button button-blue" type="button" hidden>Volgende foto <span>→</span></button>
+    <button id="share-score" class="button button-outline" type="button">Deel je score <span>↗</span></button>
     <div class="result-secondary-actions">
       <button id="play-again" class="text-button" type="button">Dezelfde puzzel nog eens</button>
       <a href="#ranking" id="view-ranking" class="text-button">Bekijk de ranglijst</a>

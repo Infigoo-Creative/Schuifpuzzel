@@ -631,6 +631,25 @@ autosolveButton.addEventListener('click', () => {
 });
 $('#close-dialog').addEventListener('click', () => dialog.close());
 $('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
+$('#share-score').addEventListener('click', async () => {
+  const photoName = GALLERY.find((item) => item.id === state.imageId)?.name ?? '';
+  const text = `Ik heb de Slideo-schuifpuzzel (${state.size}×${state.size}, ${photoName}) opgelost in ${formatTime(state.elapsed)} met ${state.moves} zetten. Kan jij het sneller? 🧩`;
+  const url = location.href.split('?')[0].split('#')[0];
+  if (navigator.share) {
+    try {
+      await navigator.share({ text, url });
+    } catch {
+      // Gebruiker annuleerde het deelvenster — geen actie nodig.
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(`${text} ${url}`);
+    showToast('Tekst gekopieerd — plak \'m waar je wilt delen.');
+  } catch {
+    showToast('Delen is op dit apparaat niet beschikbaar.');
+  }
+});
 $('#view-ranking').addEventListener('click', () => { dialog.close(); $('.leaderboard-section').scrollIntoView(); });
 
 document.querySelectorAll('.tab').forEach((tab) => {
@@ -643,19 +662,46 @@ openGalleryButton.addEventListener('click', () => {
 });
 $('#close-gallery').addEventListener('click', () => galleryDialog.close());
 
-document.addEventListener('keydown', (event) => {
+// Verplaatst de tegel die bij een richting hoort (pijltjestoets of swipe): "omhoog" betekent
+// hetzelfde als de ArrowUp-toets — de tegel ÓNDER de lege plek schuift naar boven, enz.
+function moveInDirection(direction) {
   if (!state.playing) return;
   const empty = state.board.indexOf(emptyValue(state.size));
-  const targetByKey = {
-    ArrowUp: empty + state.size,
-    ArrowDown: empty - state.size,
-    ArrowLeft: empty + 1,
-    ArrowRight: empty - 1,
+  const targetByDirection = {
+    up: empty + state.size,
+    down: empty - state.size,
+    left: empty + 1,
+    right: empty - 1,
   };
-  const target = targetByKey[event.key];
+  const target = targetByDirection[direction];
   if (target !== undefined && neighbours(empty, state.size).includes(target)) {
-    event.preventDefault();
     moveTile(state.board[target]);
+  }
+}
+
+const SWIPE_THRESHOLD = 24; // pixels
+let touchStart = null;
+puzzle.addEventListener('touchstart', (event) => {
+  const touch = event.touches[0];
+  touchStart = { x: touch.clientX, y: touch.clientY };
+}, { passive: true });
+puzzle.addEventListener('touchend', (event) => {
+  if (!touchStart) return;
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - touchStart.x;
+  const dy = touch.clientY - touchStart.y;
+  touchStart = null;
+  if (Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD) return;
+  const direction = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+  moveInDirection(direction);
+}, { passive: true });
+
+document.addEventListener('keydown', (event) => {
+  if (!state.playing) return;
+  const direction = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[event.key];
+  if (direction) {
+    event.preventDefault();
+    moveInDirection(direction);
   }
 });
 
@@ -682,6 +728,17 @@ function wireImageUpload() {
   });
 }
 */
+
+$('#theme-toggle').addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('schuifpuzzel-theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('schuifpuzzel-theme', 'dark');
+  }
+});
 
 renderGallery();
 updateCoverPreview();
