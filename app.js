@@ -50,6 +50,7 @@ const codeDialog = $('#code-dialog');
 const codeDisplay = $('#code-display');
 const progressFill = $('#progress-fill');
 const progressText = $('#progress-text');
+const nextChallengeButton = $('#next-challenge');
 
 const state = {
   size: 3,
@@ -276,6 +277,21 @@ function stopGame() {
   showToast('Poging gestopt — deze tijd telt niet mee.');
 }
 
+// Stelt voor wat de speler hierna zou moeten doen: liever een nog niet voltooide foto op
+// hetzelfde niveau, anders de volgende moeilijkheidsgraad, anders niets meer (alles klaar).
+function findNextChallenge() {
+  const sameLevelItem = GALLERY.find((item) => !isCompleted(state.size, item.id));
+  if (sameLevelItem) return { size: state.size, imageId: sameLevelItem.id, kind: 'photo', item: sameLevelItem };
+
+  const sizeIndex = SIZES.indexOf(state.size);
+  for (let i = sizeIndex + 1; i < SIZES.length; i++) {
+    const nextSize = SIZES[i];
+    const item = GALLERY.find((entry) => !isCompleted(nextSize, entry.id));
+    if (item) return { size: nextSize, imageId: item.id, kind: 'level', item };
+  }
+  return null;
+}
+
 async function finishGame() {
   state.playing = false;
   cancelAnimationFrame(state.timerFrame);
@@ -319,8 +335,31 @@ async function finishGame() {
   $('#result-title').textContent = rank > 0 && rank <= 10 ? `Plek ${rank}. Heel netjes!` : 'Lekker geschoven!';
   let message = rank > 0 && rank <= 10
     ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
-    : `Voltooid in ${state.moves} zetten. Nog één poging en je schuift misschien wél de top 10 binnen.`;
+    : `Voltooid in ${state.moves} zetten.`;
   if (!wasAlreadyCompleted) message += ' Dit level heb je nu voor het eerst uitgespeeld — badge verdiend!';
+
+  const nextChallenge = findNextChallenge();
+  if (nextChallenge) {
+    const label = nextChallenge.kind === 'level'
+      ? `Naar ${nextChallenge.size} × ${nextChallenge.size}: ${nextChallenge.item.name}`
+      : `Volgende foto: ${nextChallenge.item.name}`;
+    nextChallengeButton.hidden = false;
+    nextChallengeButton.innerHTML = `${label} <span>→</span>`;
+    nextChallengeButton.onclick = () => {
+      dialog.close();
+      state.size = nextChallenge.size;
+      const radio = document.querySelector(`input[name=size][value="${nextChallenge.size}"]`);
+      if (radio) radio.checked = true;
+      selectImage(nextChallenge.imageId);
+      startGame();
+    };
+    message += nextChallenge.kind === 'level'
+      ? ' Alle foto\'s op dit niveau zijn klaar — tijd voor de volgende moeilijkheidsgraad.'
+      : ' Kies hieronder gerust de volgende foto.';
+  } else {
+    nextChallengeButton.hidden = true;
+    message += ' Je hebt alle 36 levels uitgespeeld — knap gedaan!';
+  }
   $('#result-message').textContent = message;
   dialog.showModal();
   playApplause();
