@@ -514,7 +514,9 @@ function renderGallery() {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'gallery-item';
-    const badge = isCompleted(state.size, item.id) ? '<span class="trophy-badge" title="Al uitgespeeld op dit niveau">🏆</span>' : '';
+    const badge = isCompleted(state.size, item.id)
+      ? '<span class="trophy-badge" title="Al uitgespeeld op dit niveau"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 4h10v4a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4Z" fill="#fff"/><path d="M7 5H4.5A1.5 1.5 0 0 0 3 6.5 3.5 3.5 0 0 0 6.5 10H7M17 5h2.5A1.5 1.5 0 0 1 21 6.5 3.5 3.5 0 0 1 17.5 10H17" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M10 16.5h4v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-2Z" fill="#fff"/><rect x="8.5" y="19.5" width="7" height="1.6" rx="0.8" fill="#fff"/></svg></span>'
+      : '';
     button.innerHTML = `${badge}<img src="${item.src}" alt="${item.name}"><span>${item.name}</span>`;
     button.addEventListener('click', () => {
       selectImage(item.id);

@@ -164,7 +164,8 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
 .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}
 .gallery-item{position:relative;border:1px solid var(--line);border-radius:var(--radius-md);background:rgba(255,255,255,.5);padding:12px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
 .gallery-item:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(29,29,31,.16);border-color:var(--blue)}
-.gallery-item .trophy-badge{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#ffd60a,#ff9f0a);display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.25);font-size:13px}
+.gallery-item .trophy-badge{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#ffd60a,#ff9f0a);display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.25)}
+.gallery-item .trophy-badge svg{width:15px;height:15px}
 .gallery-item img{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;box-shadow:0 4px 12px rgba(29,29,31,.18)}
 .gallery-item span{font:600 11px "Manrope"}
 
