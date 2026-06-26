@@ -53,10 +53,20 @@ Spelers kiezen vóór het starten een foto uit een vaste galerij van 9 (zie `ass
 
 ## Namen modereren
 
-`moderation.js` (client) en `api.php` (server, de echte poortwachter) controleren namen tegen een woordenlijst, met normalisatie tegen simpele omzeiltrucs (hoofdletters, cijfers i.p.v. letters zoals "k4nker"). Dit is geen waterdicht filter — creatieve omzeiling blijft mogelijk. Vul de lijst (`BANNED_WORDS`) in beide bestanden gerust aan; houd ze wel in lijn met elkaar. Voor naleving achteraf: gebruik `admin.php` om ongepaste scores handmatig te verwijderen.
+`moderation.js` (client) en `shared.php` (server, de echte poortwachter, gebruikt door zowel `api.php` als `progress.php`) controleren namen tegen een woordenlijst, met normalisatie tegen simpele omzeiltrucs (hoofdletters, cijfers i.p.v. letters zoals "k4nker"). Dit is geen waterdicht filter — creatieve omzeiling blijft mogelijk. Vul de lijst (`BANNED_WORDS`) in beide bestanden gerust aan; houd ze wel in lijn met elkaar. Voor naleving achteraf: gebruik `admin.php` om ongepaste scores handmatig te verwijderen.
+
+## Testgereedschap: Help en Autosolve
+
+Tijdens het spelen staan er naast "Stop poging" twee hulpknoppen:
+
+- **Help** — toont de stuknummers op de tegels en laat de klok 2x zo snel lopen zolang hij actief is (een eerlijke prijs voor de hint).
+- **Autosolve** — lost de actieve puzzel automatisch op (A*-zoekalgoritme in `puzzle.js`), met een willekeurige korte pauze tussen zetten, zodat je niet telkens handmatig hoeft te schuiven tijdens het testen. Werkt vlot op 3×3/4×4; op 5×5/6×6 lukt het niet altijd binnen de tijdslimiet (hij stopt dan netjes met een melding, in plaats van vast te lopen).
+
+Zet `ENABLE_AUTOSOLVE = false` boven in `app.js` om die knop helemaal te verbergen vóór je live gaat — de Help-knop is wél bedoeld om te blijven staan, dat is een leuke speler-feature.
 
 ## Voor livegang
 
 - Pas titel en teksten aan naar wens.
-- Voor een grote campagne is een database en rate limiting op `api.php` aan te raden.
+- Zet `ENABLE_AUTOSOLVE` in `app.js` op `false`.
+- Voor een grote campagne is een database en rate limiting op `api.php`/`progress.php` aan te raden.
 - Zie "Scores en persistentie" hierboven voordat je een update deployt.

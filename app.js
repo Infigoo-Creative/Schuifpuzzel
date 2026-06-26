@@ -1,4 +1,4 @@
-import { neighbours, isSolved, shuffledBoard, trySwap, formatTime } from './puzzle.js';
+import { neighbours, isSolved, shuffledBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
 import { fetchRanking, saveScore } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
 import {
@@ -7,6 +7,11 @@ import {
 } from './progress.js';
 
 const SIZES = [3, 4, 5, 6];
+
+// --- Tijdelijk testgereedschap: zet op false om de Autosolve-knop helemaal te verbergen. ---
+const ENABLE_AUTOSOLVE = true;
+const AUTOSOLVE_MIN_DELAY = 60;
+const AUTOSOLVE_MAX_DELAY = 220;
 
 const GALLERY = [
   { id: 'papegaai', name: 'Papegaai', src: 'assets/gallery/papegaai.jpg' },
@@ -36,6 +41,7 @@ const coverStartButton = $('#cover-start-button');
 const puzzleCover = $('#puzzle-cover');
 const stopButton = $('#stop-button');
 const helpButton = $('#help-button');
+const autosolveButton = $('#autosolve-button');
 const dialog = $('#result-dialog');
 const galleryDialog = $('#gallery-dialog');
 const galleryGrid = $('#gallery-grid');
@@ -62,6 +68,8 @@ const state = {
   elapsed: 0,
   lastTick: 0,
   helpActive: false,
+  autoSolving: false,
+  autoSolveTimer: null,
   moves: 0,
   timerFrame: null,
   currentEntryId: null,
@@ -235,6 +243,44 @@ function setHelpActive(active) {
   timerEl.classList.add('pulse');
 }
 
+// --- Tijdelijk testgereedschap: lost de actieve puzzel automatisch op, met willekeurige
+// pauzes tussen zetten, zodat je niet elke keer handmatig hoeft te schuiven tijdens het testen.
+function stopAutosolve() {
+  state.autoSolving = false;
+  clearTimeout(state.autoSolveTimer);
+  autosolveButton.classList.remove('is-active');
+  autosolveButton.textContent = 'Autosolve';
+}
+
+function startAutosolve() {
+  if (!state.playing) return;
+  autosolveButton.textContent = 'Bezig met rekenen…';
+  autosolveButton.disabled = true;
+  const moves = solveBoard(state.board, state.size);
+  autosolveButton.disabled = false;
+  if (!state.playing) return; // gestopt terwijl er gerekend werd
+  if (moves.length === 0) {
+    showToast('Dit bord is te complex om snel op te lossen. Werkt het best op 3×3/4×4 — speel anders verder of begin opnieuw.');
+    autosolveButton.textContent = 'Autosolve';
+    return;
+  }
+  state.autoSolving = true;
+  autosolveButton.classList.add('is-active');
+  autosolveButton.textContent = 'Stop autosolve';
+  let i = 0;
+  const playNext = () => {
+    if (!state.autoSolving || !state.playing || i >= moves.length) {
+      stopAutosolve();
+      return;
+    }
+    moveTile(moves[i]);
+    i++;
+    const delay = AUTOSOLVE_MIN_DELAY + Math.random() * (AUTOSOLVE_MAX_DELAY - AUTOSOLVE_MIN_DELAY);
+    state.autoSolveTimer = setTimeout(playNext, delay);
+  };
+  playNext();
+}
+
 function startGame() {
   coverStartButton.hidden = true;
   state.board = shuffledBoard(state.size);
@@ -248,6 +294,8 @@ function startGame() {
   stopButton.disabled = false;
   helpButton.disabled = false;
   setHelpActive(false);
+  stopAutosolve();
+  autosolveButton.disabled = !ENABLE_AUTOSOLVE;
   state.lastTick = performance.now();
   tick();
 }
@@ -270,6 +318,8 @@ function stopGame() {
   stopButton.disabled = true;
   helpButton.disabled = true;
   setHelpActive(false);
+  stopAutosolve();
+  autosolveButton.disabled = true;
   frame.className = 'puzzle-frame is-ready';
   coverTitle.innerHTML = 'Poging gestopt.<br>Probeer het nog eens.';
   coverSubtitle.textContent = 'Deze tijd telt niet mee';
@@ -298,6 +348,8 @@ async function finishGame() {
   stopButton.disabled = true;
   helpButton.disabled = true;
   setHelpActive(false);
+  stopAutosolve();
+  autosolveButton.disabled = true;
   frame.className = 'puzzle-frame is-ready';
   coverTitle.innerHTML = 'Mooi gedaan!<br>Nog een ronde?';
   coverSubtitle.textContent = 'Klik om opnieuw te beginnen';
@@ -570,6 +622,10 @@ stopButton.addEventListener('click', stopGame);
 helpButton.addEventListener('click', () => {
   if (!state.playing) return;
   setHelpActive(!state.helpActive);
+});
+autosolveButton.hidden = !ENABLE_AUTOSOLVE;
+autosolveButton.addEventListener('click', () => {
+  if (state.autoSolving) stopAutosolve(); else startAutosolve();
 });
 $('#close-dialog').addEventListener('click', () => dialog.close());
 $('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
