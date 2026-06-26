@@ -3,7 +3,7 @@ import { fetchRanking, saveScore } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
 import {
   getPlayer, registerPlayer, recoverByCode, syncFromServer, markCompleted,
-  countCompletedForSize, totalCompleted, isCompleted,
+  countCompletedForSize, totalCompleted, isCompleted, getLastTime, setLastTime,
 } from './progress.js';
 
 const SIZES = [3, 4, 5, 6];
@@ -24,6 +24,8 @@ const GALLERY = [
   { id: 'auto', name: 'Auto', src: 'assets/gallery/auto.jpg' },
   { id: 'raket', name: 'Raket', src: 'assets/gallery/raket.jpg' },
 ];
+
+const TOTAL_LEVELS = SIZES.length * GALLERY.length;
 
 const $ = (selector) => document.querySelector(selector);
 const puzzle = $('#puzzle');
@@ -189,7 +191,7 @@ function playApplause() {
 // target = waar de confetti in de DOM terechtkomt. Een open <dialog> leeft in de browser-
 // "top layer", dus confetti die in document.body terechtkomt, verdwijnt daar visueel onder;
 // door 'm als kind van de dialoog te plaatsen, deelt hij diezelfde top layer en blijft hij zichtbaar.
-function spawnConfetti(target = document.body) {
+function spawnConfetti(target = document.body, count = 26) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const colors = ['#0a84ff', '#5e5ce6', '#ff375f', '#ffd60a', '#34c759'];
   const container = document.createElement('div');
@@ -198,7 +200,7 @@ function spawnConfetti(target = document.body) {
   container.style.pointerEvents = 'none';
   container.style.zIndex = '50';
   container.style.overflow = 'hidden';
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < count; i++) {
     const piece = document.createElement('span');
     const size = 6 + Math.random() * 5;
     piece.style.position = 'absolute';
@@ -366,6 +368,9 @@ async function finishGame() {
   };
 
   const wasAlreadyCompleted = isCompleted(state.size, state.imageId);
+  const totalBefore = totalCompleted();
+  const previousTime = getLastTime(state.size, state.imageId);
+  setLastTime(state.size, state.imageId, Math.round(state.elapsed));
 
   let ranking = [];
   let rank = null;
@@ -383,8 +388,28 @@ async function finishGame() {
 
   await markCompleted(state.size, state.imageId);
   renderProgress();
+  const justCompletedAll = totalBefore < TOTAL_LEVELS && totalCompleted() === TOTAL_LEVELS;
 
   $('#final-time').textContent = formatTime(state.elapsed);
+
+  const deltaEl = $('#time-delta');
+  if (previousTime == null) {
+    deltaEl.hidden = true;
+  } else {
+    const diff = previousTime - Math.round(state.elapsed);
+    deltaEl.hidden = false;
+    if (diff > 0) {
+      deltaEl.textContent = `${formatTime(Math.abs(diff))} sneller dan je vorige poging`;
+      deltaEl.className = 'time-delta is-faster';
+    } else if (diff < 0) {
+      deltaEl.textContent = `${formatTime(Math.abs(diff))} langzamer dan je vorige poging`;
+      deltaEl.className = 'time-delta is-slower';
+    } else {
+      deltaEl.textContent = 'Precies even snel als je vorige poging';
+      deltaEl.className = 'time-delta';
+    }
+  }
+
   $('#result-title').textContent = rank > 0 && rank <= 10 ? `Plek ${rank}. Heel netjes!` : 'Lekker geschoven!';
   let message = rank > 0 && rank <= 10
     ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
@@ -413,10 +438,20 @@ async function finishGame() {
     nextChallengeButton.hidden = true;
     message += ' Je hebt alle 36 levels uitgespeeld — knap gedaan!';
   }
+
+  dialog.classList.toggle('is-grand', justCompletedAll);
+  if (justCompletedAll) {
+    $('#result-eyebrow-text').textContent = 'ALLES VOLTOOID';
+    $('#result-title').textContent = 'Jij hebt ze allemaal!';
+    message = `Alle 36 levels uitgespeeld — elke foto, op elk niveau. Met ${state.moves} zetten leg je deze laatste mooi af. Knap gedaan!`;
+  } else {
+    $('#result-eyebrow-text').textContent = 'PUZZEL VOLTOOID';
+  }
   $('#result-message').textContent = message;
   dialog.showModal();
   playApplause();
-  spawnConfetti(dialog);
+  spawnConfetti(dialog, justCompletedAll ? 70 : 26);
+  if (justCompletedAll) setTimeout(() => spawnConfetti(dialog, 50), 500);
 }
 
 function imageSrcFor(imageId) {

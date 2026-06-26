@@ -5,6 +5,7 @@
 const PROGRESS_URL = 'progress.php';
 const PLAYER_KEY = 'schuifpuzzel-player';
 const COMPLETED_KEY = 'schuifpuzzel-completed';
+const LAST_TIMES_KEY = 'schuifpuzzel-last-times';
 
 export function comboKey(size, imageId) {
   return `${size}-${imageId}`;
@@ -48,6 +49,26 @@ export function isCompleted(size, imageId) {
 
 export function totalCompleted() {
   return getCompletedSet().size;
+}
+
+// Onthoudt (los van de gedeelde ranglijst) wat je laatste tijd was op een specifieke
+// foto x niveau-combinatie, zodat we bij een nieuwe poging kunnen zeggen "sneller/langzamer".
+function getLastTimes() {
+  try {
+    return JSON.parse(localStorage.getItem(LAST_TIMES_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+export function getLastTime(size, imageId) {
+  return getLastTimes()[comboKey(size, imageId)] ?? null;
+}
+
+export function setLastTime(size, imageId, ms) {
+  const times = getLastTimes();
+  times[comboKey(size, imageId)] = ms;
+  localStorage.setItem(LAST_TIMES_KEY, JSON.stringify(times));
 }
 
 // Eerste keer naam invullen, geen code: server genereert een nieuwe unieke code.
