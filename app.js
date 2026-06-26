@@ -34,6 +34,7 @@ const coverSubtitle = $('#cover-subtitle');
 const coverStartButton = $('#cover-start-button');
 const puzzleCover = $('#puzzle-cover');
 const stopButton = $('#stop-button');
+const helpButton = $('#help-button');
 const dialog = $('#result-dialog');
 const galleryDialog = $('#gallery-dialog');
 const galleryGrid = $('#gallery-grid');
@@ -56,8 +57,9 @@ const state = {
   board: [],
   player: null,
   playing: false,
-  startTime: 0,
   elapsed: 0,
+  lastTick: 0,
+  helpActive: false,
   moves: 0,
   timerFrame: null,
   currentEntryId: null,
@@ -82,6 +84,10 @@ function buildTiles() {
     const row = Math.floor(value / state.size);
     tile.style.backgroundPosition = `${(col * 100) / (state.size - 1)}% ${(row * 100) / (state.size - 1)}%`;
     tile.addEventListener('click', () => moveTile(value));
+    const number = document.createElement('span');
+    number.className = 'tile-number';
+    number.textContent = value + 1;
+    tile.appendChild(number);
     puzzle.appendChild(tile);
   }
   renderBoard(false);
@@ -214,6 +220,13 @@ function moveTile(value) {
   if (isSolved(state.board)) finishGame();
 }
 
+function setHelpActive(active) {
+  state.helpActive = active;
+  puzzle.classList.toggle('show-numbers', active);
+  helpButton.classList.toggle('is-active', active);
+  helpButton.textContent = active ? 'Stop help' : 'Help';
+}
+
 function startGame() {
   coverStartButton.hidden = true;
   state.board = shuffledBoard(state.size);
@@ -225,13 +238,19 @@ function startGame() {
   frame.className = 'puzzle-frame is-playing';
   state.playing = true;
   stopButton.disabled = false;
-  state.startTime = performance.now();
+  helpButton.disabled = false;
+  setHelpActive(false);
+  state.lastTick = performance.now();
   tick();
 }
 
+// De tijd loopt op basis van verstreken delta's (niet vanaf één vast startmoment), zodat de
+// helpknop de klok 2x zo snel kan laten lopen als "prijs" voor het zien van de stuknummers.
 function tick(now = performance.now()) {
   if (!state.playing) return;
-  state.elapsed = now - state.startTime;
+  const delta = now - state.lastTick;
+  state.lastTick = now;
+  state.elapsed += delta * (state.helpActive ? 2 : 1);
   timerEl.textContent = formatTime(state.elapsed);
   state.timerFrame = requestAnimationFrame(tick);
 }
@@ -241,6 +260,8 @@ function stopGame() {
   state.playing = false;
   cancelAnimationFrame(state.timerFrame);
   stopButton.disabled = true;
+  helpButton.disabled = true;
+  setHelpActive(false);
   frame.className = 'puzzle-frame is-ready';
   coverTitle.innerHTML = 'Poging gestopt.<br>Probeer het nog eens.';
   coverSubtitle.textContent = 'Deze tijd telt niet mee';
@@ -252,6 +273,8 @@ async function finishGame() {
   state.playing = false;
   cancelAnimationFrame(state.timerFrame);
   stopButton.disabled = true;
+  helpButton.disabled = true;
+  setHelpActive(false);
   frame.className = 'puzzle-frame is-ready';
   coverTitle.innerHTML = 'Mooi gedaan!<br>Nog een ronde?';
   coverSubtitle.textContent = 'Klik om opnieuw te beginnen';
@@ -498,6 +521,10 @@ $('#change-player').addEventListener('click', () => {
 });
 coverStartButton.addEventListener('click', startGame);
 stopButton.addEventListener('click', stopGame);
+helpButton.addEventListener('click', () => {
+  if (!state.playing) return;
+  setHelpActive(!state.helpActive);
+});
 $('#close-dialog').addEventListener('click', () => dialog.close());
 $('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
 $('#view-ranking').addEventListener('click', () => { dialog.close(); $('.leaderboard-section').scrollIntoView(); });

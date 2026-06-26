@@ -82,7 +82,7 @@
         <div id="puzzle-frame" class="puzzle-frame is-locked">
           <div id="puzzle" class="puzzle" aria-label="Schuifpuzzel"></div>
           <div id="puzzle-cover" class="puzzle-cover">
-            <span id="cover-size">3 × 3</span>
+            <span id="cover-size" class="cover-size-badge">3 × 3</span>
             <strong id="cover-title">Kies je niveau<br>en begin te schuiven.</strong>
             <small id="cover-subtitle">Vul je naam in om te beginnen</small>
             <button id="cover-start-button" class="button button-blue" type="button" hidden>Start opnieuw <span>→</span></button>
@@ -90,7 +90,10 @@
         </div>
 
         <div class="game-actions">
-          <button id="stop-button" class="button button-outline" disabled>Stop poging</button>
+          <div class="game-action-buttons">
+            <button id="stop-button" class="button button-outline" disabled>Stop poging</button>
+            <button id="help-button" class="button button-outline" disabled>Help</button>
+          </div>
           <p>Klik of gebruik je pijltjestoetsen<br>om de stenen te verschuiven.</p>
         </div>
       </div>
