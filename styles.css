@@ -113,9 +113,9 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .player-bar div span{font-size:10px;letter-spacing:.14em;display:block;margin-bottom:4px;text-transform:uppercase;color:#6e6e73}
 .player-bar div strong{font:600 20px "Manrope"}
 .player-bar div small{display:block;margin-top:2px;font:500 11px "DM Sans";color:#86868b;letter-spacing:.04em}
-.settings-button{display:inline-flex;align-items:center;gap:8px;justify-self:end;border:0;background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;font:700 11px "Manrope";letter-spacing:.04em;padding:11px 18px;border-radius:999px;cursor:pointer;box-shadow:0 10px 24px rgba(94,92,230,.35);transition:transform .18s,box-shadow .18s}
-.settings-button svg{width:15px;height:15px;flex:none}
-.settings-button:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(94,92,230,.45)}
+.settings-button{justify-self:end;justify-content:center;gap:10px;background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 10px 24px rgba(94,92,230,.35)}
+.settings-button svg{width:18px;height:18px;flex:none}
+.settings-button:hover{box-shadow:0 14px 30px rgba(94,92,230,.45)}
 
 .game-column{max-width:650px;width:100%;justify-self:end}
 .game-topbar{display:flex;justify-content:space-between;margin:0 5px 16px;gap:10px}
