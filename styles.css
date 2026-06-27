@@ -248,7 +248,7 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
   .leaderboard .time{font-size:14px}
   .result-dialog,.gallery-dialog,.code-dialog{padding:32px 22px}
   .gallery-grid{grid-template-columns:repeat(2,1fr)}
-  footer{padding:0 20px;display:block;padding-top:45px}
+  footer{padding:0 20px;display:block;padding-top:45px;text-align:center}
   footer span{display:block;margin-bottom:10px}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
