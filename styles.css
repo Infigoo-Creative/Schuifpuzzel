@@ -121,6 +121,8 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .settings-button{justify-self:end;justify-content:center;gap:10px;background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 10px 24px rgba(94,92,230,.35)}
 .settings-button svg{width:18px;height:18px;flex:none}
 .settings-button:hover{box-shadow:0 14px 30px rgba(94,92,230,.45)}
+.start-puzzle-button{justify-content:center;gap:10px}
+.start-puzzle-button svg{width:18px;height:18px;flex:none}
 
 .game-column{max-width:650px;width:100%;justify-self:end}
 .game-topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:start;margin:0 5px 16px;gap:10px}
