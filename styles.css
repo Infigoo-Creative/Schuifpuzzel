@@ -29,8 +29,8 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",-apple-system,BlinkMacSystemFont,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .25s,color .25s}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;overflow-x:hidden;background:var(--paper);color:var(--ink);font-family:"DM Sans",-apple-system,BlinkMacSystemFont,sans-serif;-webkit-font-smoothing:antialiased;transition:background-color .25s,color .25s}
 [hidden]{display:none!important}
 .grain{position:fixed;inset:0;pointer-events:none;opacity:.04;z-index:10;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
 
@@ -49,7 +49,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans",-ap
 .hero{min-height:760px;display:grid;grid-template-columns:minmax(340px,.92fr) minmax(480px,1.08fr);gap:7vw;padding:6.5vw 5.5vw 7vw}
 .hero-copy{max-width:610px}
 .eyebrow{display:flex;align-items:center;gap:10px;font:600 10px/1 "Manrope",sans-serif;letter-spacing:.2em}
-.eyebrow span{display:block;width:28px;height:2px;border-radius:2px;background:linear-gradient(120deg,var(--coral),var(--violet))}
+.eyebrow span:first-child{display:block;width:28px;height:2px;flex:none;border-radius:2px;background:linear-gradient(120deg,var(--coral),var(--violet))}
 h1,h2{font-family:"Manrope",sans-serif;letter-spacing:-.055em;margin:0;font-weight:600}
 h1{font-size:clamp(64px,7vw,112px);line-height:.91;margin:30px 0 35px}
 h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;background:linear-gradient(120deg,var(--blue),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -99,28 +99,28 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .field input::placeholder{color:#a1a1a6}
 .field:focus-within{border-color:var(--blue)}
 
-.button{border:0;font:700 12px "Manrope";letter-spacing:.06em;text-transform:uppercase;min-height:56px;padding:0 26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:space-between;gap:28px;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s}
+.button{border:0;font:700 12px "Manrope";letter-spacing:.06em;text-transform:uppercase;padding:17px 26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:space-between;gap:28px;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s}
 .button span{display:inline-flex;align-items:center;line-height:1}
 .button:hover:not(:disabled){transform:translateY(-2px)}
 .button:disabled{opacity:.35;cursor:not-allowed}
 .button-dark{background:#1d1d1f;color:#fff}
 .button-blue{background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 14px 30px rgba(94,92,230,.35)}
 .button-outline{border:1px solid rgba(var(--ink-rgb),.22);background:transparent}
-.text-button{border:0;background:none;text-decoration:underline;text-underline-offset:4px;font:600 11px "DM Sans";color:inherit;cursor:pointer;padding:8px 0}
+.text-button{border:0;background:none;text-decoration:underline;text-underline-offset:4px;font:600 11px "DM Sans";color:inherit;cursor:pointer;padding:10px 2px}
 
 .player-bar{border-top:1px solid var(--line);padding-top:22px;grid-template-columns:1fr auto;gap:12px;align-items:center}
 .player-bar:not([hidden]){display:grid}
 .player-bar div span{font-size:10px;letter-spacing:.14em;display:block;margin-bottom:4px;text-transform:uppercase;color:#6e6e73}
-.player-bar div strong{font:600 20px "Manrope"}
+.player-bar div strong{font:600 20px "Manrope";overflow-wrap:break-word}
 .player-bar div small{display:block;margin-top:2px;font:500 11px "DM Sans";color:#86868b;letter-spacing:.04em}
 .settings-button{justify-self:end;justify-content:center;gap:10px;background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 10px 24px rgba(94,92,230,.35)}
 .settings-button svg{width:18px;height:18px;flex:none}
 .settings-button:hover{box-shadow:0 14px 30px rgba(94,92,230,.45)}
 
 .game-column{max-width:650px;width:100%;justify-self:end}
-.game-topbar{display:flex;justify-content:space-between;margin:0 5px 16px;gap:10px}
+.game-topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:start;margin:0 5px 16px;gap:10px}
 .stat span{display:block;font:700 9px "Manrope";letter-spacing:.18em;margin-bottom:3px;color:#86868b}
-.stat strong{font:700 23px "Manrope";font-variant-numeric:tabular-nums;transition:color .2s}
+.stat strong{font:700 clamp(16px,5vw,23px) "Manrope";font-variant-numeric:tabular-nums;transition:color .2s}
 .stat-right{text-align:right}
 .stat-center{text-align:center}
 
@@ -142,9 +142,9 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .puzzle-cover small{margin-top:20px;opacity:.85}
 .puzzle-cover .button{margin-top:24px}
 .puzzle-frame.is-playing .puzzle-cover{opacity:0;visibility:hidden}
-.game-actions{display:flex;justify-content:space-between;align-items:start;margin-top:22px}
-.game-actions p{font-size:10px;line-height:1.6;color:#86868b;margin:4px 0;text-align:right}
-.game-action-buttons{display:flex;gap:10px}
+.game-actions{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-top:22px}
+.game-actions p{flex:1 1 auto;min-width:150px;font-size:10px;line-height:1.6;color:#86868b;margin:4px 0;text-align:right}
+.game-action-buttons{display:flex;flex-wrap:wrap;gap:10px}
 #help-button.is-active{background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;border-color:transparent}
 #autosolve-button.is-active{background:linear-gradient(120deg,var(--coral),var(--violet));color:#fff;border-color:transparent}
 
@@ -164,7 +164,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .leaderboard li{height:70px;border-bottom:1px solid rgba(255,255,255,.06);padding:0 14px;animation:slideIn .4s both}
 .leaderboard .position{color:#7c7c83;font:600 12px "Manrope"}
 .leaderboard .avatar img{width:36px;height:36px;border-radius:10px;object-fit:cover;box-shadow:0 4px 10px rgba(0,0,0,.3)}
-.leaderboard .name{font:600 16px "Manrope"}
+.leaderboard .name{font:600 16px "Manrope";overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .leaderboard .move-count{font-size:12px;color:#9a9aa1}
 .leaderboard .time{font:700 17px "Manrope";font-variant-numeric:tabular-nums;text-align:right}
 .leaderboard li:first-child .position,.leaderboard li:first-child .time{color:#7ab8ff}
@@ -175,10 +175,10 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 
 footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-content:space-between;font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#6e6e73}
 
-.result-dialog,.gallery-dialog,.code-dialog{width:min(560px,calc(100% - 36px));border:0;padding:46px;background:var(--glass-bg);backdrop-filter:blur(24px) saturate(180%);color:var(--ink);box-shadow:0 40px 100px rgba(0,0,0,.3);border-radius:var(--radius-lg)}
+.result-dialog,.gallery-dialog,.code-dialog{width:min(560px,calc(100% - 36px));max-height:calc(100vh - 48px);overflow-y:auto;border:0;padding:46px;background:var(--glass-bg);backdrop-filter:blur(24px) saturate(180%);color:var(--ink);box-shadow:0 40px 100px rgba(0,0,0,.3);border-radius:var(--radius-lg)}
 .result-dialog.is-grand{box-shadow:0 40px 100px rgba(0,0,0,.3),0 0 0 3px #ffd60a,0 0 60px rgba(255,214,10,.45)}
 .result-dialog.is-grand #result-title{background:linear-gradient(120deg,#ffd60a,var(--coral),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.result-dialog.is-grand .eyebrow span{background:linear-gradient(120deg,#ffd60a,var(--coral))}
+.result-dialog.is-grand .eyebrow span:first-child{background:linear-gradient(120deg,#ffd60a,var(--coral))}
 .time-delta{font:600 12px "Manrope";text-align:right;margin:-10px 0 16px}
 .time-delta.is-faster{color:#34c759}
 .time-delta.is-slower{color:#86868b}
@@ -188,7 +188,7 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
 .code-display{font:700 44px "Manrope";letter-spacing:.15em;text-align:center;padding:22px 0;margin:8px 0;border-radius:var(--radius-md);background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff}
 .code-dialog p{line-height:1.6;color:#6e6e73}
 .result-dialog .button{width:100%;margin-top:20px}
-.result-secondary-actions{display:flex;justify-content:space-between;align-items:center;margin-top:16px;gap:12px}
+.result-secondary-actions{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:16px;gap:8px 12px}
 .result-secondary-actions .text-button{font-size:11px}
 .dialog-close{position:absolute;right:18px;top:16px;border:0;background:rgba(var(--ink-rgb),.06);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;line-height:1}
 .result-time{padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
@@ -223,20 +223,20 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
   .site-header{height:74px}
   .edition{display:none}
   .hero{padding:45px 20px 70px}
-  .hero-copy h1{font-size:54px}
+  .hero-copy h1{font-size:clamp(34px,11vw,54px)}
   .intro{font-size:15px}
   .size-options{grid-template-columns:repeat(2,1fr)}
   .ready-panel:not([hidden]){grid-template-columns:1fr}
   .puzzle-frame{padding:12px}
   .puzzle-cover{inset:12px}
-  .game-topbar{flex-wrap:wrap}
-  .game-actions{align-items:center}
-  .game-actions p{max-width:180px}
+  .game-actions p{max-width:180px;text-align:center}
+  .player-bar{grid-template-columns:1fr;justify-items:stretch}
+  .settings-button{justify-self:stretch}
   .leaderboard-section{padding:70px 20px}
   .table-head,.leaderboard li{grid-template-columns:34px 36px 1fr 56px 76px;padding-left:10px;padding-right:10px}
   .leaderboard .name{font-size:13px}
   .leaderboard .time{font-size:14px}
-  .result-dialog,.gallery-dialog{padding:32px 22px}
+  .result-dialog,.gallery-dialog,.code-dialog{padding:32px 22px}
   .gallery-grid{grid-template-columns:repeat(2,1fr)}
   footer{padding:0 20px;display:block;padding-top:45px}
   footer span{display:block;margin-bottom:10px}
