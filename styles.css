@@ -87,11 +87,12 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .code-recovery{margin-top:-8px}
 .code-recovery .field{margin-top:14px}
 
-.photo-picker{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:var(--radius-md);background:rgba(var(--surface-rgb),.6);padding:10px 18px 10px 10px;cursor:pointer;transition:transform .18s,box-shadow .18s}
+.photo-picker{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--line);border-radius:var(--radius-md);background:rgba(var(--surface-rgb),.6);padding:10px 18px 10px 10px;cursor:pointer;transition:transform .18s,box-shadow .18s}
 .photo-picker:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(var(--ink-rgb),.1)}
-.photo-picker img{width:48px;height:48px;border-radius:12px;object-fit:cover;box-shadow:0 4px 12px rgba(var(--ink-rgb),.18)}
-.photo-picker span{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font:700 13px "Manrope"}
-.photo-picker span small{font-weight:500;font-size:11px;color:#86868b}
+.photo-picker img{width:48px;height:48px;border-radius:12px;object-fit:cover;box-shadow:0 4px 12px rgba(var(--ink-rgb),.18);flex:none}
+.photo-picker-text{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font:700 13px "Manrope"}
+.photo-picker-text small{font-weight:500;font-size:11px;color:#86868b}
+.photo-picker-arrow{display:none;font-size:18px;color:#86868b;flex:none}
 
 .field{border-bottom:1px solid rgba(var(--ink-rgb),.25);padding-bottom:9px}
 .field label{display:block;font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:9px;color:#6e6e73;font-weight:600}
@@ -226,6 +227,8 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
   .hero-copy h1{font-size:clamp(34px,11vw,54px)}
   .intro{font-size:15px}
   .size-options{grid-template-columns:repeat(2,1fr)}
+  .photo-picker{width:100%}
+  .photo-picker-arrow{display:block}
   .ready-panel:not([hidden]){grid-template-columns:1fr}
   .puzzle-frame{padding:12px}
   .puzzle-cover{inset:12px}
