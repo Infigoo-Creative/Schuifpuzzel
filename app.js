@@ -716,6 +716,12 @@ puzzle.addEventListener('touchstart', (event) => {
   const touch = event.touches[0];
   touchStart = { x: touch.clientX, y: touch.clientY };
 }, { passive: true });
+puzzle.addEventListener('touchmove', (event) => {
+  // touch-action:none op .puzzle voorkomt dit al, maar sommige browsers
+  // (oudere Safari) negeren dat soms tijdens een actieve swipe — vandaar
+  // deze expliciete preventDefault als achtervang tegen page-scroll.
+  if (touchStart) event.preventDefault();
+}, { passive: false });
 puzzle.addEventListener('touchend', (event) => {
   if (!touchStart) return;
   const touch = event.changedTouches[0];
