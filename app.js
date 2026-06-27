@@ -583,7 +583,7 @@ haveCodeLink.addEventListener('click', () => {
 
 function showPlayerCodeHint() {
   const player = getPlayer();
-  playerCodeHint.textContent = player ? `Jouw code: ${player.code}` : '';
+  playerCodeHint.textContent = player ? player.code : '';
 }
 
 // Na het invullen van naam (en eventueel code) hier verder: leaderboard laden, UI omzetten
@@ -597,6 +597,11 @@ function proceedToGame(name) {
   playerBar.hidden = false;
   loadLeaderboard(state.size);
   startGame();
+  // Op mobiel staat de pagina nog boven bij de intro-tekst; spring naar het
+  // spelblok zodat speler, code, instellingen-knop en bord meteen in beeld staan.
+  if (window.matchMedia('(max-width: 560px)').matches) {
+    requestAnimationFrame(() => playerBar.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
 }
 
 setupForm.addEventListener('submit', async (event) => {

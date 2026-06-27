@@ -111,9 +111,13 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 
 .player-bar{border-top:1px solid var(--line);padding-top:22px;grid-template-columns:1fr auto;gap:12px;align-items:center}
 .player-bar:not([hidden]){display:grid}
-.player-bar div span{font-size:10px;letter-spacing:.14em;display:block;margin-bottom:4px;text-transform:uppercase;color:#6e6e73}
-.player-bar div strong{font:600 20px "Manrope";overflow-wrap:break-word}
-.player-bar div small{display:block;margin-top:2px;font:500 11px "DM Sans";color:#86868b;letter-spacing:.04em}
+.player-info{display:flex;flex-direction:column;min-width:0}
+.player-info-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6e6e73}
+.player-name-line .player-info-label{display:block;margin-bottom:4px}
+.player-name-line strong{font:600 20px "Manrope";overflow-wrap:break-word}
+.player-code-line{margin-top:2px;font:500 11px "DM Sans";color:#86868b;letter-spacing:.04em}
+.player-code-line .player-info-label{font:inherit;color:inherit;letter-spacing:inherit;text-transform:none}
+.player-code-line .player-info-label::after{content:": "}
 .settings-button{justify-self:end;justify-content:center;gap:10px;background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 10px 24px rgba(94,92,230,.35)}
 .settings-button svg{width:18px;height:18px;flex:none}
 .settings-button:hover{box-shadow:0 14px 30px rgba(94,92,230,.45)}
@@ -237,7 +241,15 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
   .game-actions{flex-direction:column;justify-content:center}
   .game-action-buttons{justify-content:center;width:100%}
   .game-actions p{max-width:none;width:100%;text-align:center}
-  .player-bar{grid-template-columns:1fr;justify-items:stretch}
+  .player-bar{grid-template-columns:1fr;justify-items:stretch;padding-top:16px}
+  .player-info{flex-direction:row;justify-content:space-between;align-items:baseline;gap:12px}
+  .player-name-line{display:flex;align-items:baseline;gap:6px;min-width:0;overflow:hidden}
+  .player-name-line .player-info-label{display:inline;margin-bottom:0;white-space:nowrap}
+  .player-name-line strong{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .player-code-line{display:flex;align-items:baseline;gap:5px;flex:none;font:inherit;color:inherit;letter-spacing:inherit}
+  .player-code-line .player-info-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6e6e73}
+  .player-code-line .player-info-label::after{content:""}
+  .player-code-line strong{font:700 13px "Manrope";letter-spacing:.04em;color:var(--ink)}
   .settings-button{justify-self:stretch}
   .leaderboard-section{padding:70px 20px}
   .leaderboard-heading{text-align:center}
