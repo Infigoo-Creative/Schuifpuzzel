@@ -116,7 +116,8 @@
             <button id="help-button" class="button button-outline" disabled>Help</button>
             <button id="autosolve-button" class="button button-outline" type="button" disabled>Autosolve</button>
           </div>
-          <p>Klik of gebruik je pijltjestoetsen om de stenen te verschuiven.</p>
+          <p class="instruction-desktop">Klik of gebruik je pijltjestoetsen om de stenen te verschuiven.</p>
+          <p class="instruction-mobile">Je kunt de tegels bewegen door te klikken of te swipen.</p>
         </div>
       </div>
     </section>
@@ -139,8 +140,6 @@
     </section>
   </main>
 
-  <footer><span>Schuifpuzzel</span><span>Gemaakt om snel te spelen, makkelijk te optimaliseren.</span></footer>
-
   <dialog id="result-dialog" class="result-dialog">
     <button id="close-dialog" class="dialog-close" aria-label="Sluiten">×</button>
     <p class="eyebrow" id="result-eyebrow"><span></span> <span id="result-eyebrow-text">PUZZEL VOLTOOID</span></p>
@@ -149,7 +148,7 @@
     <p id="time-delta" class="time-delta" hidden></p>
     <p id="result-message"></p>
     <button id="next-challenge" class="button button-blue" type="button" hidden>Volgende foto <span>→</span></button>
-    <button id="pick-other-photo" class="button button-outline" type="button">Kies handmatig een andere foto <span>→</span></button>
+    <button id="pick-other-photo" class="button button-outline" type="button">Kies foto <span>→</span></button>
     <div class="result-secondary-actions">
       <button id="play-again" class="text-button" type="button">Dezelfde puzzel nog eens</button>
       <a href="#ranking" id="view-ranking" class="text-button">Bekijk de ranglijst</a>

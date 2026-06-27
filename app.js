@@ -420,7 +420,7 @@ async function finishGame() {
   if (nextChallenge) {
     const label = nextChallenge.kind === 'level'
       ? `Naar ${nextChallenge.size} × ${nextChallenge.size}: ${nextChallenge.item.name}`
-      : `Volgende foto: ${nextChallenge.item.name}`;
+      : 'Volgende foto';
     nextChallengeButton.hidden = false;
     nextChallengeButton.innerHTML = `${label} <span>→</span>`;
     nextChallengeButton.onclick = () => {
