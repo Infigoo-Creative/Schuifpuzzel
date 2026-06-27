@@ -159,8 +159,9 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .tab:hover{transform:translateY(-1px)}
 .tab.is-active{background:linear-gradient(120deg,var(--blue),var(--violet));border-color:transparent;color:#fff}
 .leaderboard-card{align-self:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius-lg);overflow:hidden}
-.table-head,.leaderboard li{display:grid;grid-template-columns:60px 48px 1fr 90px 110px;align-items:center}
+.table-head,.leaderboard li{display:grid;grid-template-columns:60px 48px 1fr 90px 110px;align-items:center;column-gap:12px}
 .table-head{font:700 9px "Manrope";letter-spacing:.18em;color:#7c7c83;padding:18px 14px}
+.table-head span:last-child{text-align:right}
 .leaderboard{list-style:none;margin:0;padding:0;border-top:1px solid rgba(255,255,255,.08)}
 .leaderboard li{height:70px;border-bottom:1px solid rgba(255,255,255,.06);padding:0 14px;animation:slideIn .4s both}
 .leaderboard .position{color:#7c7c83;font:600 12px "Manrope"}
@@ -232,11 +233,16 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
   .ready-panel:not([hidden]){grid-template-columns:1fr}
   .puzzle-frame{padding:12px}
   .puzzle-cover{inset:12px}
-  .game-actions p{max-width:180px;text-align:center}
+  .game-actions{flex-direction:column;justify-content:center}
+  .game-action-buttons{justify-content:center;width:100%}
+  .game-actions p{max-width:none;width:100%;text-align:center}
   .player-bar{grid-template-columns:1fr;justify-items:stretch}
   .settings-button{justify-self:stretch}
   .leaderboard-section{padding:70px 20px}
-  .table-head,.leaderboard li{grid-template-columns:34px 36px 1fr 56px 76px;padding-left:10px;padding-right:10px}
+  .leaderboard-heading{text-align:center}
+  .leaderboard-heading .eyebrow{justify-content:center}
+  .leaderboard-tabs{justify-content:center}
+  .table-head,.leaderboard li{grid-template-columns:30px 34px 1fr 52px 70px;padding-left:10px;padding-right:10px;column-gap:8px}
   .leaderboard .name{font-size:13px}
   .leaderboard .time{font-size:14px}
   .result-dialog,.gallery-dialog,.code-dialog{padding:32px 22px}
