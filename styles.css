@@ -245,7 +245,7 @@ footer{min-height:130px;padding:0 5.5vw;display:flex;align-items:center;justify-
   .player-info{flex-direction:row;justify-content:space-between;align-items:baseline;gap:12px}
   .player-name-line{display:flex;align-items:baseline;gap:6px;min-width:0;overflow:hidden}
   .player-name-line .player-info-label{display:inline;margin-bottom:0;white-space:nowrap}
-  .player-name-line strong{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .player-name-line strong{font:700 13px "Manrope";letter-spacing:.04em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .player-code-line{display:flex;align-items:baseline;gap:5px;flex:none;font:inherit;color:inherit;letter-spacing:inherit}
   .player-code-line .player-info-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6e6e73}
   .player-code-line .player-info-label::after{content:""}
