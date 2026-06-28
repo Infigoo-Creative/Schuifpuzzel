@@ -1,0 +1,15 @@
+{
+  "name": "Slideo — Schuifpuzzel",
+  "short_name": "Slideo",
+  "description": "Een online schuifpuzzel met instelbare moeilijkheidsgraad en een kiesgalerij met foto's.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f5f7",
+  "theme_color": "#171715",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
