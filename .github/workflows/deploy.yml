@@ -23,3 +23,9 @@ jobs:
           protocol: ftp
           local-dir: ./
           server-dir: /slideo/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            README.md
