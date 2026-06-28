@@ -43,6 +43,7 @@ const coverSize = $('#cover-size');
 const coverTitle = $('#cover-title');
 const coverSubtitle = $('#cover-subtitle');
 const coverStartButton = $('#cover-start-button');
+const coverPlayAgainButton = $('#cover-play-again');
 const coverNextChallengeButton = $('#cover-next-challenge');
 const coverPickPhotoButton = $('#cover-pick-photo');
 const puzzleCover = $('#puzzle-cover');
@@ -301,6 +302,7 @@ function updateAutosolveVisibility() {
 
 function startGame() {
   coverStartButton.hidden = true;
+  coverPlayAgainButton.hidden = true;
   coverNextChallengeButton.hidden = true;
   coverPickPhotoButton.hidden = true;
   state.board = shuffledBoard(state.size);
@@ -347,6 +349,7 @@ function stopGame() {
   coverSubtitle.textContent = 'Deze tijd telt niet mee';
   coverNextChallengeButton.hidden = true;
   coverPickPhotoButton.hidden = true;
+  coverPlayAgainButton.hidden = true;
   coverStartButton.hidden = false;
   showToast('Poging gestopt — deze tijd telt niet mee.');
 }
@@ -404,8 +407,9 @@ async function finishGame() {
   }
   frame.className = 'puzzle-frame is-ready';
   coverTitle.innerHTML = 'Mooi gedaan!<br>Nog een ronde?';
-  coverSubtitle.textContent = 'Klik om opnieuw te beginnen';
-  coverStartButton.hidden = false;
+  coverSubtitle.textContent = 'Kies hieronder hoe je verdergaat';
+  coverStartButton.hidden = true;
+  coverPlayAgainButton.hidden = false;
   state.currentEntryId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   const entry = {
@@ -720,6 +724,7 @@ function openSettings() {
   playerBar.hidden = true;
   setupForm.hidden = false;
   coverStartButton.hidden = true;
+  coverPlayAgainButton.hidden = true;
   coverNextChallengeButton.hidden = true;
   coverPickPhotoButton.hidden = true;
   coverTitle.innerHTML = 'Kies je niveau<br>en begin te schuiven.';
@@ -728,6 +733,7 @@ function openSettings() {
 }
 $('#change-player').addEventListener('click', () => confirmStopIfPlaying(openSettings));
 coverStartButton.addEventListener('click', startGame);
+coverPlayAgainButton.addEventListener('click', startGame);
 stopButton.addEventListener('click', () => confirmStopIfPlaying(stopGame));
 confirmStopConfirm.addEventListener('click', () => {
   confirmStopDialog.close();
