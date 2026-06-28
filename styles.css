@@ -119,7 +119,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 
 .player-bar{border-top:1px solid var(--line);padding-top:22px;grid-template-columns:1fr auto;gap:12px;align-items:center}
 .player-bar:not([hidden]){display:grid}
-.player-info{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-end;column-gap:10px;min-width:0}
+.player-info{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-end;column-gap:6px;min-width:0}
 .player-info-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6e6e73}
 .player-name-line{margin:0}
 .player-name-line .player-info-label{display:block;margin-bottom:4px}
