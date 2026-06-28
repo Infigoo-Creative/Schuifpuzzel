@@ -351,6 +351,15 @@ function stopGame() {
   showToast('Poging gestopt — deze tijd telt niet mee.');
 }
 
+let pendingStopAction = null;
+
+// Hervat de klok vanaf nu (niet vanaf het moment van pauzeren) als de poging nog loopt.
+function resumeTickIfPlaying() {
+  if (!state.playing) return;
+  state.lastTick = performance.now();
+  tick();
+}
+
 // Onderbreekt een actieve poging niet zomaar: als er al zetten gedaan zijn, eerst expliciet
 // laten bevestigen (anders gaat de tijd/voortgang ongemerkt verloren). Zonder zetten is er
 // niets te verliezen, dus dan voeren we de actie direct uit — geen onnodige drempel.
@@ -359,14 +368,12 @@ function confirmStopIfPlaying(action) {
     action();
     return;
   }
-  confirmStopDialog.returnValue = '';
+  // De klok blijft anders gewoon doorlopen (requestAnimationFrame stopt niet vanzelf voor
+  // een modale dialoog) — pauzeer 'm zolang er op een antwoord wordt gewacht.
+  cancelAnimationFrame(state.timerFrame);
+  pendingStopAction = action;
   confirmStopDialog.showModal();
   confirmStopCancel.focus();
-  const onClose = () => {
-    confirmStopDialog.removeEventListener('close', onClose);
-    if (confirmStopDialog.returnValue === 'stop') action();
-  };
-  confirmStopDialog.addEventListener('close', onClose);
 }
 
 // Stelt voor wat de speler hierna zou moeten doen: liever een nog niet voltooide foto op
@@ -723,12 +730,21 @@ $('#change-player').addEventListener('click', () => confirmStopIfPlaying(openSet
 coverStartButton.addEventListener('click', startGame);
 stopButton.addEventListener('click', () => confirmStopIfPlaying(stopGame));
 confirmStopConfirm.addEventListener('click', () => {
-  confirmStopDialog.returnValue = 'stop';
   confirmStopDialog.close();
+  const action = pendingStopAction;
+  pendingStopAction = null;
+  if (action) action();
 });
 confirmStopCancel.addEventListener('click', () => {
-  confirmStopDialog.returnValue = '';
   confirmStopDialog.close();
+  pendingStopAction = null;
+  resumeTickIfPlaying();
+});
+// Dialoog met Esc gesloten (geen van beide knoppen): behandel dat hetzelfde als
+// "Verder puzzelen", anders blijft de klok onbedoeld gepauzeerd staan.
+confirmStopDialog.addEventListener('cancel', () => {
+  pendingStopAction = null;
+  resumeTickIfPlaying();
 });
 helpButton.addEventListener('click', () => {
   if (!state.playing) return;
