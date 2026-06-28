@@ -1,4 +1,19 @@
+# macOS
 .DS_Store
-data/*.json
-_Input/
+
+# Ontwikkelbestanden
+.vscode/
+.idea/
+
+# Logbestanden
+*.log
+
+# Tijdelijke bestanden
+*.tmp
+
+# Lokale ontwikkelomgeving
 _devserver.py
+_Input/
+
+# Data die niet in GitHub hoort
+data/*.json
