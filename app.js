@@ -12,6 +12,9 @@ const SIZES = [3, 4, 5, 6];
 const ENABLE_AUTOSOLVE = true;
 const AUTOSOLVE_MIN_DELAY = 60;
 const AUTOSOLVE_MAX_DELAY = 220;
+// Met Autosolve opgeloste puzzels mogen nooit een goede tijd in de ranglijst zetten:
+// de getoonde/opgeslagen tijd wordt geforceerd naar ruim boven het half uur.
+const AUTOSOLVE_MIN_REPORTED_TIME = 30 * 60 * 1000;
 
 const GALLERY = [
   { id: 'papegaai', name: 'Papegaai', src: 'assets/gallery/papegaai.jpg' },
@@ -268,6 +271,7 @@ function startAutosolve() {
     return;
   }
   state.autoSolving = true;
+  state.usedAutosolve = true;
   autosolveButton.classList.add('is-active');
   autosolveButton.textContent = 'Stop autosolve';
   let i = 0;
@@ -290,6 +294,7 @@ function startGame() {
   buildTiles();
   state.moves = 0;
   state.elapsed = 0;
+  state.usedAutosolve = false;
   movesEl.textContent = '0';
   timerEl.textContent = '00:00.0';
   frame.className = 'puzzle-frame is-playing';
@@ -353,6 +358,9 @@ async function finishGame() {
   setHelpActive(false);
   stopAutosolve();
   autosolveButton.disabled = true;
+  if (state.usedAutosolve) {
+    state.elapsed = Math.max(state.elapsed, AUTOSOLVE_MIN_REPORTED_TIME + Math.random() * 60000);
+  }
   frame.className = 'puzzle-frame is-ready';
   coverTitle.innerHTML = 'Mooi gedaan!<br>Nog een ronde?';
   coverSubtitle.textContent = 'Klik om opnieuw te beginnen';
