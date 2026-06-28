@@ -36,7 +36,7 @@ body{margin:0;overflow-x:hidden;background:var(--paper);color:var(--ink);font-fa
 [hidden]{display:none!important}
 .grain{position:fixed;inset:0;pointer-events:none;opacity:.04;z-index:10;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
 
-.site-header{min-height:88px;display:flex;align-items:center;justify-content:space-between;padding:0 5.5vw;padding-top:env(safe-area-inset-top);background:var(--glass-bg);backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:5}
+.site-header{min-height:calc(88px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;padding:0 5.5vw;padding-top:env(safe-area-inset-top);background:var(--glass-bg);backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--glass-border);position:sticky;top:0;z-index:5}
 .brand{display:flex;align-items:center;text-decoration:none}
 .brand img{display:block}
 .edition{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:#6e6e73}
@@ -231,7 +231,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
   .leaderboard-section{grid-template-columns:1fr;gap:50px}
 }
 @media(max-width:560px){
-  .site-header{min-height:74px}
+  .site-header{min-height:calc(74px + env(safe-area-inset-top))}
   .edition{display:none}
   .hero{padding:45px 20px 70px}
   .hero-copy h1{font-size:clamp(34px,11vw,54px)}
