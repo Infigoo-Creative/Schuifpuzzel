@@ -43,6 +43,8 @@ const coverSize = $('#cover-size');
 const coverTitle = $('#cover-title');
 const coverSubtitle = $('#cover-subtitle');
 const coverStartButton = $('#cover-start-button');
+const coverNextChallengeButton = $('#cover-next-challenge');
+const coverPickPhotoButton = $('#cover-pick-photo');
 const puzzleCover = $('#puzzle-cover');
 const stopButton = $('#stop-button');
 const helpButton = $('#help-button');
@@ -62,6 +64,9 @@ const codeDisplay = $('#code-display');
 const progressFill = $('#progress-fill');
 const progressText = $('#progress-text');
 const nextChallengeButton = $('#next-challenge');
+const confirmStopDialog = $('#confirm-stop-dialog');
+const confirmStopConfirm = $('#confirm-stop-confirm');
+const confirmStopCancel = $('#confirm-stop-cancel');
 
 const state = {
   size: 3,
@@ -296,6 +301,8 @@ function updateAutosolveVisibility() {
 
 function startGame() {
   coverStartButton.hidden = true;
+  coverNextChallengeButton.hidden = true;
+  coverPickPhotoButton.hidden = true;
   state.board = shuffledBoard(state.size);
   buildTiles();
   state.moves = 0;
@@ -338,8 +345,28 @@ function stopGame() {
   frame.className = 'puzzle-frame is-ready';
   coverTitle.innerHTML = 'Poging gestopt.<br>Probeer het nog eens.';
   coverSubtitle.textContent = 'Deze tijd telt niet mee';
+  coverNextChallengeButton.hidden = true;
+  coverPickPhotoButton.hidden = true;
   coverStartButton.hidden = false;
   showToast('Poging gestopt — deze tijd telt niet mee.');
+}
+
+// Onderbreekt een actieve poging niet zomaar: als er al zetten gedaan zijn, eerst expliciet
+// laten bevestigen (anders gaat de tijd/voortgang ongemerkt verloren). Zonder zetten is er
+// niets te verliezen, dus dan voeren we de actie direct uit — geen onnodige drempel.
+function confirmStopIfPlaying(action) {
+  if (!state.playing || state.moves === 0) {
+    action();
+    return;
+  }
+  confirmStopDialog.returnValue = '';
+  confirmStopDialog.showModal();
+  confirmStopCancel.focus();
+  const onClose = () => {
+    confirmStopDialog.removeEventListener('close', onClose);
+    if (confirmStopDialog.returnValue === 'stop') action();
+  };
+  confirmStopDialog.addEventListener('close', onClose);
 }
 
 // Stelt voor wat de speler hierna zou moeten doen: liever een nog niet voltooide foto op
@@ -431,14 +458,16 @@ async function finishGame() {
     : `Voltooid in ${state.moves} zetten.`;
   if (!wasAlreadyCompleted) message += ' Dit level heb je nu voor het eerst uitgespeeld — badge verdiend!';
 
+  // Dezelfde vervolgactie (en dezelfde knoppen-tekst) geldt zowel in de pop-up als op de
+  // cover die verschijnt zodra die pop-up wordt gesloten — zo hoeft de speler nooit terug
+  // te zoeken naar "volgende foto" of "kies een andere foto" na bijv. de ranglijst bekijken.
   const nextChallenge = findNextChallenge();
+  coverPickPhotoButton.hidden = false;
   if (nextChallenge) {
     const label = nextChallenge.kind === 'level'
       ? `Naar ${nextChallenge.size} × ${nextChallenge.size}: ${nextChallenge.item.name}`
       : 'Volgende foto';
-    nextChallengeButton.hidden = false;
-    nextChallengeButton.innerHTML = `${label} <span>→</span>`;
-    nextChallengeButton.onclick = () => {
+    const goToNextChallenge = () => {
       dialog.close();
       state.size = nextChallenge.size;
       const radio = document.querySelector(`input[name=size][value="${nextChallenge.size}"]`);
@@ -446,11 +475,18 @@ async function finishGame() {
       selectImage(nextChallenge.imageId);
       startGame();
     };
+    nextChallengeButton.hidden = false;
+    nextChallengeButton.innerHTML = `${label} <span>→</span>`;
+    nextChallengeButton.onclick = goToNextChallenge;
+    coverNextChallengeButton.hidden = false;
+    coverNextChallengeButton.innerHTML = `${label} <span>→</span>`;
+    coverNextChallengeButton.onclick = goToNextChallenge;
     message += nextChallenge.kind === 'level'
       ? ' Alle foto\'s op dit niveau zijn klaar — tijd voor de volgende moeilijkheidsgraad.'
       : ' Kies hieronder gerust de volgende foto.';
   } else {
     nextChallengeButton.hidden = true;
+    coverNextChallengeButton.hidden = true;
     message += ' Je hebt alle 36 levels uitgespeeld — knap gedaan!';
   }
 
@@ -672,17 +708,28 @@ $('#close-code-dialog').addEventListener('click', () => {
   if (name) proceedToGame(name);
 });
 
-$('#change-player').addEventListener('click', () => {
+function openSettings() {
   if (state.playing) stopGame();
   playerBar.hidden = true;
   setupForm.hidden = false;
   coverStartButton.hidden = true;
+  coverNextChallengeButton.hidden = true;
+  coverPickPhotoButton.hidden = true;
   coverTitle.innerHTML = 'Kies je niveau<br>en begin te schuiven.';
   coverSubtitle.textContent = 'Vul je naam in om te beginnen';
   frame.className = 'puzzle-frame is-locked';
-});
+}
+$('#change-player').addEventListener('click', () => confirmStopIfPlaying(openSettings));
 coverStartButton.addEventListener('click', startGame);
-stopButton.addEventListener('click', stopGame);
+stopButton.addEventListener('click', () => confirmStopIfPlaying(stopGame));
+confirmStopConfirm.addEventListener('click', () => {
+  confirmStopDialog.returnValue = 'stop';
+  confirmStopDialog.close();
+});
+confirmStopCancel.addEventListener('click', () => {
+  confirmStopDialog.returnValue = '';
+  confirmStopDialog.close();
+});
 helpButton.addEventListener('click', () => {
   if (!state.playing) return;
   setHelpActive(!state.helpActive);
@@ -691,14 +738,16 @@ updateAutosolveVisibility();
 autosolveButton.addEventListener('click', () => {
   if (state.autoSolving) stopAutosolve(); else startAutosolve();
 });
-$('#close-dialog').addEventListener('click', () => dialog.close());
-$('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
-$('#pick-other-photo').addEventListener('click', () => {
+function openPhotoPicker() {
   dialog.close();
   state.startAfterPick = true;
   renderGallery();
   galleryDialog.showModal();
-});
+}
+$('#close-dialog').addEventListener('click', () => dialog.close());
+$('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
+$('#pick-other-photo').addEventListener('click', openPhotoPicker);
+coverPickPhotoButton.addEventListener('click', openPhotoPicker);
 $('#view-ranking').addEventListener('click', () => { dialog.close(); $('.leaderboard-section').scrollIntoView(); });
 
 document.querySelectorAll('.tab').forEach((tab) => {

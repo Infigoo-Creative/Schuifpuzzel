@@ -48,7 +48,7 @@
       <div class="hero-copy">
         <p class="eyebrow"><span></span> NIEUW SPEL</p>
         <h1>Schuif jezelf<br>naar de <em>top.</em></h1>
-        <p class="intro">Kies een moeilijkheidsgraad, kies een foto uit de galerij en leg de puzzel zo snel mogelijk. Je tijd en aantal zetten komen in de ranglijst. Speel alle foto's op elk niveau uit om trofeeën te verdienen — je voortgang wordt bewaard met een persoonlijke code, geen account nodig.</p>
+        <p class="intro">Geen puzzelstukjes om te leggen: hier schuif je tegels naar hun plek, zo snel en met zo weinig zetten mogelijk. Elke run telt voor de ranglijst. Kies een moeilijkheidsgraad — van relaxed 3×3 tot pittig 6×6 — en werk je door alle foto's heen om elke trofee te verdienen. Geen account nodig: je voortgang blijft bewaard met een persoonlijke code.</p>
 
         <div id="progress-summary" class="progress-summary">
           <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
@@ -119,7 +119,11 @@
             <span id="cover-size" class="cover-size-badge">3 × 3</span>
             <strong id="cover-title">Kies je niveau<br>en begin te schuiven.</strong>
             <small id="cover-subtitle">Vul je naam in om te beginnen</small>
-            <button id="cover-start-button" class="button button-blue" type="button" hidden>Start opnieuw <span>→</span></button>
+            <div id="cover-actions" class="cover-actions">
+              <button id="cover-next-challenge" class="button start-puzzle-button" type="button" hidden>Volgende foto <span>→</span></button>
+              <button id="cover-start-button" class="button button-blue" type="button" hidden>Start opnieuw <span>→</span></button>
+              <button id="cover-pick-photo" class="button button-outline" type="button" hidden>Kies foto <span>→</span></button>
+            </div>
           </div>
         </div>
 
@@ -183,6 +187,14 @@
     <div class="code-display" id="code-display">123456</div>
     <p>Met deze code herstel je je voortgang later op een ander apparaat. Schrijf 'm op of maak een screenshot.</p>
     <button id="confirm-code" class="button button-blue" type="button">Begrepen <span>→</span></button>
+  </dialog>
+
+  <dialog id="confirm-stop-dialog" class="confirm-dialog">
+    <p class="eyebrow"><span></span> EVEN CHECKEN</p>
+    <h2>Puzzel stoppen?</h2>
+    <p>Je huidige poging wordt beëindigd en je tijd gaat verloren. Weet je zeker dat je wilt stoppen?</p>
+    <button id="confirm-stop-cancel" class="button button-blue" type="button" autofocus>Verder puzzelen</button>
+    <button id="confirm-stop-confirm" class="button button-outline" type="button">Puzzel stoppen</button>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
