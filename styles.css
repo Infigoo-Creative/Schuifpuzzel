@@ -215,7 +215,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .gallery-item img{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;box-shadow:0 4px 12px rgba(var(--ink-rgb),.18)}
 .gallery-item span{font:600 11px "Manrope"}
 
-.version-stamp{text-align:center;padding:18px 0 22px;margin:0;font-size:10px;letter-spacing:.06em;color:#6e6e73;opacity:.55}
+.version-stamp{grid-column:1/3;text-align:right;margin:28px 0 0;padding:0;font-size:10px;letter-spacing:.06em;color:rgba(255,255,255,.35)}
 
 .toast{position:fixed;left:50%;bottom:24px;z-index:20;transform:translate(-50%,130px);width:max-content;max-width:calc(100vw - 40px);text-align:center;background:#1d1d1f;color:#fff;padding:14px 22px;font-size:12px;border-radius:999px;box-shadow:0 12px 40px rgba(0,0,0,.25);transition:transform .3s}
 .toast.show{transform:translate(-50%,0)}
@@ -231,6 +231,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
   .hero{grid-template-columns:1fr;padding-top:60px}
   .game-column{justify-self:start;max-width:680px}
   .leaderboard-section{grid-template-columns:1fr;gap:50px}
+  .version-stamp{grid-column:1}
 }
 @media(max-width:560px){
   .site-header{min-height:calc(74px + env(safe-area-inset-top))}
