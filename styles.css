@@ -215,7 +215,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .gallery-item img{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;box-shadow:0 4px 12px rgba(var(--ink-rgb),.18)}
 .gallery-item span{font:600 11px "Manrope"}
 
-.toast{position:fixed;left:50%;bottom:24px;z-index:20;transform:translate(-50%,130px);background:var(--ink);color:#fff;padding:14px 22px;font-size:12px;border-radius:999px;box-shadow:0 12px 40px rgba(0,0,0,.25);transition:transform .3s}
+.toast{position:fixed;left:50%;bottom:24px;z-index:20;transform:translate(-50%,130px);width:max-content;max-width:calc(100vw - 40px);text-align:center;background:#1d1d1f;color:#fff;padding:14px 22px;font-size:12px;border-radius:999px;box-shadow:0 12px 40px rgba(0,0,0,.25);transition:transform .3s}
 .toast.show{transform:translate(-50%,0)}
 
 @keyframes slideIn{from{opacity:0;transform:translateY(8px)}}

@@ -288,6 +288,12 @@ function startAutosolve() {
   playNext();
 }
 
+// Autosolve is alleen haalbaar binnen de tijdslimiet op 3×3 — vanaf 4×4 duurt het
+// zoekalgoritme te lang, dus de knop is daar verborgen i.p.v. een mislukte poging te tonen.
+function updateAutosolveVisibility() {
+  autosolveButton.hidden = !ENABLE_AUTOSOLVE || state.size !== 3;
+}
+
 function startGame() {
   coverStartButton.hidden = true;
   state.board = shuffledBoard(state.size);
@@ -303,7 +309,8 @@ function startGame() {
   helpButton.disabled = false;
   setHelpActive(false);
   stopAutosolve();
-  autosolveButton.disabled = !ENABLE_AUTOSOLVE;
+  updateAutosolveVisibility();
+  autosolveButton.disabled = autosolveButton.hidden;
   state.lastTick = performance.now();
   tick();
 }
@@ -580,6 +587,7 @@ setupForm.addEventListener('change', (event) => {
     state.size = Number(new FormData(setupForm).get('size'));
     updateCoverPreview();
     renderGallery();
+    updateAutosolveVisibility();
   }
 });
 
@@ -679,7 +687,7 @@ helpButton.addEventListener('click', () => {
   if (!state.playing) return;
   setHelpActive(!state.helpActive);
 });
-autosolveButton.hidden = !ENABLE_AUTOSOLVE;
+updateAutosolveVisibility();
 autosolveButton.addEventListener('click', () => {
   if (state.autoSolving) stopAutosolve(); else startAutosolve();
 });
