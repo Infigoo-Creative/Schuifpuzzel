@@ -23,6 +23,24 @@ function setPlayer(player) {
   localStorage.setItem(PLAYER_KEY, JSON.stringify(player));
 }
 
+// Werkt de bewaarde naam bij (zelfde code, zelfde apparaat) — gebruikt wanneer een speler
+// tijdens het spelen zijn naam wijzigt. Werkt ook het server-side voortgangsrecord bij, zodat
+// code-herstel op een ander apparaat later weer de actuele naam laat zien.
+export async function updatePlayerName(name) {
+  const player = getPlayer();
+  if (!player) return;
+  setPlayer({ ...player, name });
+  try {
+    await fetch(PROGRESS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'rename', code: player.code, name }),
+    });
+  } catch {
+    // Geen server beschikbaar: de lokale naam hierboven is dan al bijgewerkt.
+  }
+}
+
 function getCompletedSet() {
   try {
     return new Set(JSON.parse(localStorage.getItem(COMPLETED_KEY)) || []);

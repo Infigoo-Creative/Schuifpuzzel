@@ -41,11 +41,44 @@ export async function fetchRanking(size) {
 
 function saveLocal(size, entry) {
   const local = JSON.parse(localStorage.getItem(localKey(size)) || '[]');
-  local.push({ id: entry.id, name: entry.name, time: entry.time, moves: entry.moves, image: entry.image, date: new Date().toISOString() });
+  local.push({ id: entry.id, name: entry.name, code: entry.code, time: entry.time, moves: entry.moves, image: entry.image, date: new Date().toISOString() });
   local.sort((a, b) => a.time - b.time || a.moves - b.moves);
   const trimmed = local.slice(0, LOCAL_CAP);
   localStorage.setItem(localKey(size), JSON.stringify(trimmed));
   return { ...rankedView(trimmed, entry.id), persisted: false };
+}
+
+const ALL_SIZES = [3, 4, 5, 6];
+
+// Werkt de naam bij van alle lokaal (demo-fallback) bewaarde scores van deze code, zodat
+// oude én nieuwe scores na een naamwijziging overal dezelfde naam tonen.
+function renameLocalScores(code, name) {
+  ALL_SIZES.forEach((size) => {
+    const key = localKey(size);
+    const local = JSON.parse(localStorage.getItem(key) || '[]');
+    let changed = false;
+    local.forEach((score) => {
+      if (score.code === code && score.name !== name) {
+        score.name = name;
+        changed = true;
+      }
+    });
+    if (changed) localStorage.setItem(key, JSON.stringify(local));
+  });
+}
+
+// Werkt zowel server-side scores (alle niveaus) als de lokale fallback bij.
+export async function renamePlayerScores(code, name) {
+  renameLocalScores(code, name);
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'rename', code, name }),
+    });
+  } catch {
+    // Geen server beschikbaar: de lokale fallback hierboven is dan voldoende.
+  }
 }
 
 export async function saveScore(size, entry) {

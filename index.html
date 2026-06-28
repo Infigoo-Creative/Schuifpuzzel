@@ -47,7 +47,7 @@
   <main>
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow"><span></span> NIEUW SPEL</p>
+        <p class="eyebrow"><span></span> SCHUIFPUZZEL GAME</p>
         <h1>Schuif jezelf<br>naar de <em>top.</em></h1>
         <p class="intro">Geen puzzelstukjes om te leggen: hier schuif je tegels naar hun plek, zo snel en met zo weinig zetten mogelijk. Elke run telt voor de ranglijst. Kies een moeilijkheidsgraad — van relaxed 3×3 tot pittig 6×6 — en werk je door alle foto's heen om elke trofee te verdienen. Geen account nodig: je voortgang blijft bewaard met een persoonlijke code.</p>
 
@@ -89,10 +89,7 @@
             </div>
           </div>
 
-          <button class="button start-puzzle-button" type="submit">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4.2v15.6a1 1 0 0 0 1.52.85l12.8-7.8a1 1 0 0 0 0-1.7l-12.8-7.8A1 1 0 0 0 6 4.2Z" fill="currentColor"/></svg>
-            Start de puzzel
-          </button>
+          <button class="button start-puzzle-button" type="submit">Start de puzzel <span>→</span></button>
         </form>
 
         <div id="player-bar" class="player-bar" hidden>
@@ -123,7 +120,7 @@
             <div id="cover-actions" class="cover-actions">
               <button id="cover-next-challenge" class="button start-puzzle-button" type="button" hidden>Volgende foto <span>→</span></button>
               <button id="cover-pick-photo" class="button button-outline" type="button" hidden>Kies foto <span>→</span></button>
-              <button id="cover-start-button" class="button button-blue" type="button" hidden>Start opnieuw <span>→</span></button>
+              <button id="cover-start-button" class="button start-puzzle-button" type="button" hidden>Start opnieuw <span>→</span></button>
               <button id="cover-play-again" class="text-button" type="button" hidden>Dezelfde puzzel nog eens</button>
             </div>
           </div>
@@ -143,7 +140,7 @@
 
     <section class="leaderboard-section">
       <div class="leaderboard-heading">
-        <div><p class="eyebrow"><span></span> HALL OF FAME</p><h2>De snelste<br>schuivers.</h2></div>
+        <div><p class="eyebrow"><span></span> TILE OF FAME</p><h2>De snelste<br>schuivers.</h2></div>
         <div class="leaderboard-tabs" id="leaderboard-tabs">
           <button type="button" class="tab is-active" data-size="3">3 × 3</button>
           <button type="button" class="tab" data-size="4">4 × 4</button>
@@ -188,7 +185,7 @@
     <h2>Bewaar deze code.</h2>
     <div class="code-display" id="code-display">123456</div>
     <p>Met deze code herstel je je voortgang later op een ander apparaat. Schrijf 'm op of maak een screenshot.</p>
-    <button id="confirm-code" class="button button-blue" type="button">Begrepen <span>→</span></button>
+    <button id="confirm-code" class="button start-puzzle-button" type="button">Begrepen <span>→</span></button>
   </dialog>
 
   <dialog id="confirm-stop-dialog" class="confirm-dialog">

@@ -103,30 +103,33 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .field input::placeholder{color:#a1a1a6}
 .field:focus-within{border-color:var(--blue)}
 
-.button{border:0;font:700 12px "Manrope";letter-spacing:.06em;text-transform:uppercase;padding:17px 26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:space-between;gap:28px;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s}
+/* Eén vaste basisstijl voor alle knoppen: tekst + (optioneel) pijltje staan altijd
+   samen gecentreerd, nooit los aan de rand. Variant-classes (zie onder) bepalen
+   alleen nog kleur/achtergrond. */
+.button{border:0;font:700 12px "Manrope";letter-spacing:.06em;text-transform:uppercase;padding:17px 26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s}
 .button span{display:inline-flex;align-items:center;line-height:1}
 .button:hover:not(:disabled){transform:translateY(-2px)}
 .button:disabled{opacity:.35;cursor:not-allowed}
-.button-dark{background:#1d1d1f;color:#fff}
-.button-blue{background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 14px 30px rgba(94,92,230,.35)}
+/* Primary: hoofdacties die de speler verder helpen (starten, doorgaan, volgende foto...). */
+.start-puzzle-button{background:linear-gradient(120deg,var(--logo-orange),var(--magenta));color:#fff;box-shadow:0 14px 30px rgba(229,61,180,.35)}
+.start-puzzle-button:hover:not(:disabled){box-shadow:0 18px 36px rgba(229,61,180,.45)}
+/* Secondary: vaste outline-stijl voor alle overige acties. */
 .button-outline{border:1px solid rgba(var(--ink-rgb),.22);background:transparent;color:inherit}
 .text-button{border:0;background:none;text-decoration:underline;text-underline-offset:4px;font:600 11px "DM Sans";color:inherit;cursor:pointer;padding:10px 2px}
 
 .player-bar{border-top:1px solid var(--line);padding-top:22px;grid-template-columns:1fr auto;gap:12px;align-items:center}
 .player-bar:not([hidden]){display:grid}
-.player-info{display:flex;flex-direction:column;min-width:0}
+.player-info{display:flex;flex-direction:row;flex-wrap:wrap;align-items:flex-end;column-gap:10px;min-width:0}
 .player-info-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#6e6e73}
+.player-name-line{margin:0}
 .player-name-line .player-info-label{display:block;margin-bottom:4px}
 .player-name-line strong{font:600 20px "Manrope";overflow-wrap:break-word}
-.player-code-line{margin-top:2px;font:500 11px "DM Sans";color:#86868b;letter-spacing:.04em}
+.player-code-line{margin-top:0;font:500 11px "DM Sans";color:#86868b;letter-spacing:.04em}
 .player-code-line .player-info-label{font:inherit;color:inherit;letter-spacing:inherit;text-transform:none}
 .player-code-line .player-info-label::after{content:": "}
-.settings-button{justify-self:end;justify-content:center;gap:10px;background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 10px 24px rgba(94,92,230,.35)}
+.settings-button{justify-self:end;background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 10px 24px rgba(94,92,230,.35)}
 .settings-button svg{width:18px;height:18px;flex:none}
 .settings-button:hover{box-shadow:0 14px 30px rgba(94,92,230,.45)}
-.start-puzzle-button{justify-content:center;gap:10px;background:linear-gradient(120deg,var(--logo-orange),var(--magenta));color:#fff;box-shadow:0 14px 30px rgba(229,61,180,.35)}
-.start-puzzle-button:hover:not(:disabled){box-shadow:0 18px 36px rgba(229,61,180,.45)}
-.start-puzzle-button svg{width:18px;height:18px;flex:none}
 
 .game-column{max-width:650px;width:100%;justify-self:end}
 .game-topbar{display:grid;grid-template-columns:1fr 1fr 1fr;align-items:start;margin:0 5px 16px;gap:10px}
@@ -153,13 +156,13 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .puzzle-cover small{margin-top:20px;opacity:.85}
 .cover-actions{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:320px;margin-top:24px}
 .cover-actions .button{width:100%}
-.cover-actions .button-outline{justify-content:center;gap:10px;border-color:rgba(255,255,255,.5)}
+.cover-actions .button-outline{border-color:rgba(255,255,255,.5)}
 .cover-actions .text-button{margin-top:4px;color:#fff;font-size:12px}
 .puzzle-frame.is-playing .puzzle-cover{opacity:0;visibility:hidden}
-.game-actions{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-top:22px}
-.game-actions p{flex:1 1 auto;min-width:150px;font-size:10px;line-height:1.6;color:#86868b;margin:4px 0;text-align:right}
+.game-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;margin-top:22px}
+.game-actions p{max-width:360px;font-size:10px;line-height:1.6;color:#86868b;margin:4px 0;text-align:center}
 .instruction-mobile{display:none}
-.game-action-buttons{display:flex;flex-wrap:wrap;gap:10px}
+.game-action-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:100%}
 #help-button.is-active{background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;border-color:transparent}
 #autosolve-button.is-active{background:linear-gradient(120deg,var(--coral),var(--violet));color:#fff;border-color:transparent}
 
@@ -252,9 +255,8 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
   .ready-panel:not([hidden]){grid-template-columns:1fr}
   .puzzle-frame{padding:12px}
   .puzzle-cover{inset:12px}
-  .game-actions{flex-direction:column;justify-content:center}
-  .game-action-buttons{justify-content:center;width:100%}
-  .game-actions p{max-width:none;width:100%;text-align:center}
+  .puzzle-cover .cover-size-badge{display:none}
+  .game-actions p{max-width:none;width:100%}
   .instruction-desktop{display:none}
   .instruction-mobile{display:block}
   .player-bar{grid-template-columns:1fr;justify-items:stretch;padding-top:16px;scroll-margin-top:calc(74px + env(safe-area-inset-top) + 20px)}

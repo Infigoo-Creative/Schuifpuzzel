@@ -86,6 +86,37 @@ if ($action === 'register') {
     exit;
 }
 
+if ($action === 'rename') {
+    $code = (string)($input['code'] ?? '');
+    $name = trim((string)($input['name'] ?? ''));
+    if (!isValidCode($code) || $name === '' || strlen($name) > 80) {
+        http_response_code(422);
+        echo json_encode(['error' => 'Ongeldige aanvraag']);
+        exit;
+    }
+    if (containsBannedWord($name)) {
+        http_response_code(422);
+        echo json_encode(['error' => 'Ongeldige naam']);
+        exit;
+    }
+    $file = progressFileFor($code);
+    $record = readJsonFile($file, []);
+    if (!$record) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Code niet gevonden']);
+        exit;
+    }
+    $record['name'] = $name;
+    $record['updatedAt'] = gmdate('c');
+    if (!writeJsonFile($file, $record)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Kon naam niet bijwerken']);
+        exit;
+    }
+    echo json_encode(publicProgress($record), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 if ($action === 'complete') {
     $code = (string)($input['code'] ?? '');
     $size = (int)($input['size'] ?? 0);

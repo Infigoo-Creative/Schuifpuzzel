@@ -54,11 +54,9 @@ function rankedView(array $sortedScores, ?string $highlightId): array {
     return ['ranking' => $top10, 'rank' => $rank, 'context' => $context];
 }
 
-$size = resolveSize();
-$scoresFile = scoresFileFor($size);
-
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    $view = rankedView(sortScores(readJsonFile($scoresFile)), null);
+    $size = resolveSize();
+    $view = rankedView(sortScores(readJsonFile(scoresFileFor($size))), null);
     echo json_encode($view['ranking'], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -70,12 +68,50 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $input = json_decode(file_get_contents('php://input') ?: '', true);
+
+// Naam gewijzigd terwijl dezelfde speler (code) doorspeelt: werk alle eerder behaalde
+// scores van die code bij, zodat overal — oud en nieuw — dezelfde naam getoond wordt.
+if (($input['action'] ?? '') === 'rename') {
+    $code = preg_replace('/[^0-9]/', '', (string)($input['code'] ?? ''));
+    $name = trim((string)($input['name'] ?? ''));
+    if (!preg_match('/^[0-9]{6}$/', $code) || $name === '' || strlen($name) > 80) {
+        http_response_code(422);
+        echo json_encode(['error' => 'Ongeldige aanvraag']);
+        exit;
+    }
+    if (containsBannedWord($name)) {
+        http_response_code(422);
+        echo json_encode(['error' => 'Ongeldige naam']);
+        exit;
+    }
+    foreach (ALLOWED_SIZES as $size) {
+        $file = scoresFileFor($size);
+        $scores = readJsonFile($file);
+        $changed = false;
+        foreach ($scores as &$score) {
+            if (($score['code'] ?? '') === $code && $score['name'] !== $name) {
+                $score['name'] = $name;
+                $changed = true;
+            }
+        }
+        unset($score);
+        if ($changed) { writeJsonFile($file, $scores); }
+    }
+    echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$size = resolveSize();
+$scoresFile = scoresFileFor($size);
+
 $name = trim((string)($input['name'] ?? ''));
 $time = (int)($input['time'] ?? 0);
 $moves = (int)($input['moves'] ?? 0);
 $id = preg_replace('/[^a-zA-Z0-9-]/', '', (string)($input['id'] ?? ''));
 $image = (string)($input['image'] ?? '');
 if (!in_array($image, ALLOWED_IMAGES, true)) { $image = 'papegaai'; }
+$code = preg_replace('/[^0-9]/', '', (string)($input['code'] ?? ''));
+if (!preg_match('/^[0-9]{6}$/', $code)) { $code = null; }
 
 if ($name === '' || strlen($name) > 80 || $time < 300 || $time > 7200000 || $moves < 1 || $moves > 50000 || $id === '' || strlen($id) > 100) {
     http_response_code(422);
@@ -90,7 +126,9 @@ if (containsBannedWord($name)) {
 }
 
 $scores = readJsonFile($scoresFile);
-$scores[] = ['id' => $id, 'name' => $name, 'time' => $time, 'moves' => $moves, 'image' => $image, 'date' => gmdate('c')];
+$entry = ['id' => $id, 'name' => $name, 'time' => $time, 'moves' => $moves, 'image' => $image, 'date' => gmdate('c')];
+if ($code !== null) { $entry['code'] = $code; }
+$scores[] = $entry;
 $scores = sortScores($scores);
 $scores = array_slice($scores, 0, 500);
 

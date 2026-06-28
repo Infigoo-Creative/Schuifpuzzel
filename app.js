@@ -1,8 +1,8 @@
 import { neighbours, isSolved, shuffledBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
-import { fetchRanking, saveScore } from './api-client.js';
+import { fetchRanking, saveScore, renamePlayerScores } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
 import {
-  getPlayer, registerPlayer, recoverByCode, syncFromServer, markCompleted,
+  getPlayer, registerPlayer, recoverByCode, syncFromServer, markCompleted, updatePlayerName,
   countCompletedForSize, totalCompleted, isCompleted, getLastTime, setLastTime,
 } from './progress.js';
 
@@ -415,6 +415,7 @@ async function finishGame() {
   const entry = {
     id: state.currentEntryId,
     name: state.player.name,
+    code: state.player.code,
     time: Math.round(state.elapsed),
     moves: state.moves,
     image: state.imageId,
@@ -652,7 +653,7 @@ function showPlayerCodeHint() {
 // Na het invullen van naam (en eventueel code) hier verder: leaderboard laden, UI omzetten
 // naar "aan het spelen" en de puzzel starten.
 function proceedToGame(name) {
-  state.player = { name };
+  state.player = { name, code: getPlayer()?.code ?? null };
   $('#player-greeting').textContent = name;
   showPlayerCodeHint();
   updateCoverPreview();
@@ -682,6 +683,12 @@ setupForm.addEventListener('submit', async (event) => {
 
   if (existingPlayer) {
     // Dit apparaat heeft al een code: gewoon doorspelen, voortgang is al lokaal bekend.
+    // Is de naam gewijzigd, dan werken we ook alle eerder behaalde scores van deze code bij,
+    // zodat oude én nieuwe scores overal dezelfde (huidige) naam tonen.
+    if (name !== existingPlayer.name) {
+      updatePlayerName(name);
+      renamePlayerScores(existingPlayer.code, name);
+    }
     proceedToGame(name);
     return;
   }
