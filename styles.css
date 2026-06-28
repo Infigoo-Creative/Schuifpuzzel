@@ -250,7 +250,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
   .game-actions p{max-width:none;width:100%;text-align:center}
   .instruction-desktop{display:none}
   .instruction-mobile{display:block}
-  .player-bar{grid-template-columns:1fr;justify-items:stretch;padding-top:16px}
+  .player-bar{grid-template-columns:1fr;justify-items:stretch;padding-top:16px;scroll-margin-top:calc(74px + env(safe-area-inset-top) + 20px)}
   .player-info{flex-direction:row;justify-content:space-between;align-items:baseline;gap:12px}
   .player-name-line{display:flex;align-items:baseline;gap:6px;min-width:0;overflow:hidden}
   .player-name-line .player-info-label{display:inline;margin-bottom:0;white-space:nowrap}
