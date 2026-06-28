@@ -812,3 +812,10 @@ syncFromServer().then(() => {
   renderGallery();
 });
 renderProgress();
+
+// Subtiel, automatisch bijgehouden versiestempel (zie .git/hooks/pre-commit) —
+// handig om te checken of de live server de laatste upload draait.
+fetch('version.json').then((res) => res.ok ? res.json() : null).then((info) => {
+  if (!info) return;
+  $('#version-stamp').textContent = `Build ${info.build} · ${info.date}`;
+}).catch(() => {});
