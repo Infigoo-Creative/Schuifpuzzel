@@ -1,5 +1,13 @@
 Options -Indexes
 
+# Forceer UTF-8 in de Content-Type header. Zonder dit kan de hostingserver een
+# andere standaard-charset (bv. ISO-8859-1) meesturen die de meta charset-tag in
+# de HTML overschrijft, met verminkte tekens (â€", Ã—) als gevolg.
+AddDefaultCharset UTF-8
+<IfModule mod_mime.c>
+  AddCharset UTF-8 .html .css .js .json
+</IfModule>
+
 <Files "config.php">
   <IfModule mod_authz_core.c>
     Require all denied
