@@ -109,7 +109,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .button:disabled{opacity:.35;cursor:not-allowed}
 .button-dark{background:#1d1d1f;color:#fff}
 .button-blue{background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff;box-shadow:0 14px 30px rgba(94,92,230,.35)}
-.button-outline{border:1px solid rgba(var(--ink-rgb),.22);background:transparent}
+.button-outline{border:1px solid rgba(var(--ink-rgb),.22);background:transparent;color:inherit}
 .text-button{border:0;background:none;text-decoration:underline;text-underline-offset:4px;font:600 11px "DM Sans";color:inherit;cursor:pointer;padding:10px 2px}
 
 .player-bar{border-top:1px solid var(--line);padding-top:22px;grid-template-columns:1fr auto;gap:12px;align-items:center}
@@ -153,6 +153,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .puzzle-cover small{margin-top:20px;opacity:.85}
 .cover-actions{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:320px;margin-top:24px}
 .cover-actions .button{width:100%}
+.cover-actions .button-outline{justify-content:center;gap:10px;border-color:rgba(255,255,255,.5)}
 .cover-actions .text-button{margin-top:4px;color:#fff;font-size:12px}
 .puzzle-frame.is-playing .puzzle-cover{opacity:0;visibility:hidden}
 .game-actions{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-top:22px}
