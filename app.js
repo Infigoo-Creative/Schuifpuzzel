@@ -661,7 +661,7 @@ function renderSizeProgress() {
       if (index < done) dot.className = 'is-done';
       container.appendChild(dot);
     });
-    container.closest('.size-label')?.classList.toggle('is-complete', done >= GALLERY.length);
+    container.closest('.level-progress-block')?.classList.toggle('is-complete', done >= GALLERY.length);
   });
 }
 
@@ -738,15 +738,33 @@ function updateProfileUI(name) {
   updateSetupFormForExistingPlayer();
 }
 
+// Klein, herbruikbaar NxN-roostericoontje (een mini-puzzelbord) — gebruikt voor "puzzels
+// gespeeld" (2×2) en de stats per moeilijkheidsgraad (3×3 t/m 6×6, exact het bordformaat).
+// Subtieler en herkenbaarder dan losse gekleurde vlakjes, en kost geen extra SVG per maat.
+function gridIcon(n) {
+  const min = 3;
+  const max = 21;
+  let lines = '';
+  for (let i = 1; i < n; i++) {
+    const pos = min + ((max - min) * i) / n;
+    lines += `<line x1="${pos}" y1="${min}" x2="${pos}" y2="${max}"/><line x1="${min}" y1="${pos}" x2="${max}" y2="${pos}"/>`;
+  }
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><rect x="${min}" y="${min}" width="${max - min}" height="${max - min}" rx="2"/>${lines}</svg>`;
+}
+
+const ICON_TROPHY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M7 4h10v4a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4Z"/><path d="M7 5H4.5A1.5 1.5 0 0 0 3 6.5 3.5 3.5 0 0 0 6.5 10H7M17 5h2.5A1.5 1.5 0 0 1 21 6.5 3.5 3.5 0 0 1 17.5 10H17"/><path d="M10 16.5h4v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-2Z"/><rect x="8.5" y="19.5" width="7" height="1.6" rx="0.8"/></svg>';
+const ICON_PODIUM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg"><path d="M4 20v-6M10 20V9M16 20v-3"/></svg>';
+const ICON_CALENDAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8 3v4M16 3v4"/></svg>';
+
 const PROFILE_STAT_DEFINITIONS = [
-  { icon: '🧩', label: 'Puzzels gespeeld', getValue: (stats) => stats.totalPlays },
-  { icon: '🏆', label: 'Top 10-noteringen', getValue: (stats) => stats.top10 },
-  { icon: '🥇', label: 'Top 3-noteringen', getValue: (stats) => stats.top3 },
-  { icon: '📅', label: 'Vandaag gespeeld', getValue: (stats) => stats.todayCount },
-  { icon: '🟢', label: '3 × 3 gespeeld', getValue: (stats) => stats.bySize[3] || 0 },
-  { icon: '🟡', label: '4 × 4 gespeeld', getValue: (stats) => stats.bySize[4] || 0 },
-  { icon: '🔴', label: '5 × 5 gespeeld', getValue: (stats) => stats.bySize[5] || 0 },
-  { icon: '⚫', label: '6 × 6 gespeeld', getValue: (stats) => stats.bySize[6] || 0 },
+  { icon: gridIcon(2), label: 'Puzzels gespeeld', getValue: (stats) => stats.totalPlays },
+  { icon: ICON_TROPHY, label: 'Top 10-noteringen', getValue: (stats) => stats.top10 },
+  { icon: ICON_PODIUM, label: 'Top 3-noteringen', getValue: (stats) => stats.top3 },
+  { icon: ICON_CALENDAR, label: 'Vandaag gespeeld', getValue: (stats) => stats.todayCount },
+  { icon: gridIcon(3), label: '3 × 3 gespeeld', getValue: (stats) => stats.bySize[3] || 0 },
+  { icon: gridIcon(4), label: '4 × 4 gespeeld', getValue: (stats) => stats.bySize[4] || 0 },
+  { icon: gridIcon(5), label: '5 × 5 gespeeld', getValue: (stats) => stats.bySize[5] || 0 },
+  { icon: gridIcon(6), label: '6 × 6 gespeeld', getValue: (stats) => stats.bySize[6] || 0 },
 ];
 
 function renderProfileStats() {
@@ -755,7 +773,7 @@ function renderProfileStats() {
   PROFILE_STAT_DEFINITIONS.forEach(({ icon, label, getValue }) => {
     const card = document.createElement('div');
     card.className = 'profile-stat';
-    card.innerHTML = `<strong>${getValue(stats)}</strong><span>${icon} ${label}</span>`;
+    card.innerHTML = `<span class="profile-stat-label">${icon}${label}</span><strong>${getValue(stats)}</strong>`;
     profileStatsGrid.appendChild(card);
   });
 }
