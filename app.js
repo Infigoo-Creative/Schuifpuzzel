@@ -527,9 +527,9 @@ async function finishGame() {
   else if (diff > 0) finishCategory = 'personalRecord';
   else finishCategory = 'normal';
 
-  const resultRankEl = $('#result-rank');
-  resultRankEl.hidden = !(rank > 0 && rank <= 10);
-  if (!resultRankEl.hidden) resultRankEl.textContent = `Plek ${rank}`;
+  $('#result-eyebrow-text').textContent = rank > 0 && rank <= 10
+    ? `PUZZEL VOLTOOID · PLEK ${rank}`
+    : 'PUZZEL VOLTOOID';
   $('#result-title').textContent = pickFinishLine(finishCategory);
   let message = rank > 0 && rank <= 10
     ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
@@ -573,8 +573,6 @@ async function finishGame() {
     $('#result-eyebrow-text').textContent = 'ALLES VOLTOOID';
     $('#result-title').textContent = 'Jij hebt ze allemaal!';
     message = `Alle 36 levels uitgespeeld — elke foto, op elk niveau. Met ${state.moves} zetten leg je deze laatste mooi af. Knap gedaan!`;
-  } else {
-    $('#result-eyebrow-text').textContent = 'PUZZEL VOLTOOID';
   }
   $('#result-message').textContent = message;
   dialog.showModal();
