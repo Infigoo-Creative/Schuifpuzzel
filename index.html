@@ -37,6 +37,10 @@
     <a class="brand" href="#"><img src="assets/logo.svg" alt="Schuifpuzzel" height="28"></a>
     <div class="header-right">
       <span class="edition">Stop met scrollen. Begin met schuiven. 🚀</span>
+      <button id="profile-button" class="profile-button" type="button" hidden aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3.13-6 7-6s7 2.4 7 6"/></svg>
+        <span id="profile-button-name"></span>
+      </button>
       <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Donkere modus aan/uit">
         <svg class="icon-sun" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
         <svg class="icon-moon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="currentColor"/></svg>
@@ -76,7 +80,7 @@
             </button>
           </div>
 
-          <div class="field">
+          <div class="field" id="name-field">
             <label for="name">Jouw naam</label>
             <input id="name" name="name" maxlength="40" autocomplete="name" placeholder="Bijv. Lisa de Vries" required>
           </div>
@@ -93,13 +97,9 @@
         </form>
 
         <div id="player-bar" class="player-bar" hidden>
-          <div class="player-info">
-            <p class="player-name-line"><span class="player-info-label">Je speelt als</span><strong id="player-greeting"></strong></p>
-            <p class="player-code-line"><span class="player-info-label">ID</span><strong id="player-code-hint"></strong></p>
-          </div>
           <button id="change-player" class="button settings-button" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-            Instellingen wijzigen
+            Puzzelinstellingen wijzigen
           </button>
         </div>
       </div>
@@ -186,6 +186,26 @@
     <div class="code-display" id="code-display">123456</div>
     <p>Met deze code herstel je je voortgang later op een ander apparaat. Schrijf 'm op of maak een screenshot.</p>
     <button id="confirm-code" class="button start-puzzle-button" type="button">Begrepen <span>→</span></button>
+  </dialog>
+
+  <dialog id="profile-dialog" class="profile-dialog">
+    <button id="close-profile" class="dialog-close" aria-label="Sluiten">×</button>
+    <p class="eyebrow"><span></span> JOUW PROFIEL</p>
+    <h2>Spelersprofiel</h2>
+
+    <section class="profile-section">
+      <h3 class="profile-section-title">Speler</h3>
+      <div class="profile-name-row">
+        <input id="profile-name-input" type="text" maxlength="40" autocomplete="name" aria-label="Jouw naam">
+        <button id="profile-name-save" class="button button-outline" type="button">Opslaan</button>
+      </div>
+      <p class="profile-id">ID <strong id="profile-id-value"></strong></p>
+    </section>
+
+    <section class="profile-section">
+      <h3 class="profile-section-title">Statistieken</h3>
+      <div id="profile-stats-grid" class="profile-stats-grid"></div>
+    </section>
   </dialog>
 
   <dialog id="confirm-stop-dialog" class="confirm-dialog">

@@ -44,7 +44,7 @@ De meegeleverde `.htaccess`-bestanden blokkeren op Apache directe toegang tot `c
 
 ## Voortgang zonder account
 
-Bij de eerste keer naam invullen genereert de server (via `progress.php`) een unieke 6-cijferige code (getoond als "ID" in de speler-balk), die lokaal (`localStorage`) onthouden wordt — op dat apparaat/browser is er dus nooit een code nodig. Voltooi je een foto op een niveau (los van leaderboard-positie, gewoon: opgelost), dan wordt die combinatie als "uitgespeeld" gemarkeerd:
+Bij de eerste keer naam invullen genereert de server (via `progress.php`) een unieke 6-cijferige code, die lokaal (`localStorage`) onthouden wordt — op dat apparaat/browser is er dus nooit een code nodig. Voltooi je een foto op een niveau (los van leaderboard-positie, gewoon: opgelost), dan wordt die combinatie als "uitgespeeld" gemarkeerd:
 
 - een trofee-badge op de foto in de kiesgalerij (per geselecteerd niveau),
 - stipjes onder elke moeilijkheidsgraad (hoeveel van de 9 foto's op dat niveau klaar zijn),
@@ -52,7 +52,9 @@ Bij de eerste keer naam invullen genereert de server (via `progress.php`) een un
 
 Op een ander apparaat/browser klik je op "Heb je al een code?" en vul je de code in — de voortgang van die code wordt dan opgehaald en samengevoegd met wat er lokaal al stond. Zonder PHP-server (lokale demo) wordt een code alleen lokaal gegenereerd; cross-device herstel werkt dan niet (logisch, er is dan niets om te delen).
 
-Wijzig je je naam tijdens het spelen (zelfde code/apparaat), dan wordt die nieuwe naam ook automatisch toegepast op alle eerder behaalde scores van die code — zowel server-side (`action: 'rename'` in `api.php`/`progress.php`) als in de lokale demo-fallback. Geldt alleen voor scores die zijn opgeslagen ná invoering van deze koppeling (oudere scores hebben nog geen `code`-veld).
+Zodra de naam de eerste keer is opgeslagen, verschijnt rechtsboven in de header een profielknop (👤 + naam). Daar — niet meer bij de puzzelinstellingen — beheer je je naam en zie je je ID en een paar lichte statistieken (puzzels gespeeld, top 10/3-noteringen, vandaag gespeeld, gespeeld per niveau). Die statistieken staan in `progress.js` (`recordPlay`/`getStats`, key `schuifpuzzel-stats`) en tellen vanaf het moment dat deze functionaliteit is toegevoegd, niet terugwerkend. De knop bij de puzzel zelf ("Puzzelinstellingen wijzigen") gaat sindsdien alleen nog over niveau en foto.
+
+Wijzig je je naam via die profielpopup, dan wordt die nieuwe naam ook automatisch toegepast op alle eerder behaalde scores van die code — zowel server-side (`action: 'rename'` in `api.php`/`progress.php`) als in de lokale demo-fallback. Geldt alleen voor scores die zijn opgeslagen ná invoering van deze koppeling (oudere scores hebben nog geen `code`-veld).
 
 Voortgang staat server-side in `data/progress/{code}.json` — zelfde aandachtspunt als bij scores: laat deze map ongemoeid bij het deployen van updates (zie "Scores en persistentie").
 

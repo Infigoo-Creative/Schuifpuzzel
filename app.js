@@ -5,6 +5,7 @@ import { pickFinishLine } from './finish-lines.js';
 import {
   getPlayer, registerPlayer, recoverByCode, syncFromServer, markCompleted, updatePlayerName,
   countCompletedForSize, totalCompleted, isCompleted, getLastTime, setLastTime,
+  recordPlay, getStats,
 } from './progress.js';
 
 const SIZES = [3, 4, 5, 6];
@@ -68,9 +69,14 @@ const photoPickerName = $('#photo-picker-name');
 const haveCodeLink = $('#have-code-link');
 const codeField = $('#code-field');
 const playerCodeInput = $('#player-code');
-const playerCodeHint = $('#player-code-hint');
 const codeDialog = $('#code-dialog');
 const codeDisplay = $('#code-display');
+const profileButton = $('#profile-button');
+const profileButtonName = $('#profile-button-name');
+const profileDialog = $('#profile-dialog');
+const profileNameInput = $('#profile-name-input');
+const profileIdValue = $('#profile-id-value');
+const profileStatsGrid = $('#profile-stats-grid');
 const progressFill = $('#progress-fill');
 const progressText = $('#progress-text');
 const nextChallengeButton = $('#next-challenge');
@@ -492,6 +498,7 @@ async function finishGame() {
     showToast(error.message === 'Ongeldige naam' ? 'Score niet opgeslagen: kies een andere naam.' : 'Score kon niet worden opgeslagen.');
   }
   if (state.activeLeaderboardSize === state.size) renderLeaderboard(ranking, rank > 10 ? context : []);
+  recordPlay({ size: state.size, rank });
 
   await markCompleted(state.size, state.imageId);
   renderProgress();
@@ -709,17 +716,52 @@ haveCodeLink.addEventListener('click', () => {
   if (!codeField.hidden) playerCodeInput.focus();
 });
 
-function showPlayerCodeHint() {
+// Zodra er een speler bekend is (eigen code), draait naam/ID-beheer voortaan via de
+// profielknop rechtsboven — het naamveld in de puzzelinstellingen is dan niet meer nodig.
+function updateSetupFormForExistingPlayer() {
+  const hasPlayer = !!getPlayer();
+  $('#name-field').hidden = hasPlayer;
+  $('.code-recovery').hidden = hasPlayer;
+}
+
+// Houdt de profielknop + profielpopup in sync met de huidige speler (naam/ID). Wordt
+// aangeroepen na registratie, na het starten van een puzzel en na een naamwijziging.
+function updateProfileUI(name) {
   const player = getPlayer();
-  playerCodeHint.textContent = player ? player.code : '';
+  profileButton.hidden = false;
+  profileButtonName.textContent = name;
+  profileNameInput.value = name;
+  profileIdValue.textContent = player ? player.code : '';
+  updateSetupFormForExistingPlayer();
+}
+
+const PROFILE_STAT_DEFINITIONS = [
+  { label: 'Puzzels gespeeld', getValue: (stats) => stats.totalPlays },
+  { label: 'Top 10-noteringen', getValue: (stats) => stats.top10 },
+  { label: 'Top 3-noteringen', getValue: (stats) => stats.top3 },
+  { label: 'Vandaag gespeeld', getValue: (stats) => stats.todayCount },
+  { label: '3 × 3 gespeeld', getValue: (stats) => stats.bySize[3] || 0 },
+  { label: '4 × 4 gespeeld', getValue: (stats) => stats.bySize[4] || 0 },
+  { label: '5 × 5 gespeeld', getValue: (stats) => stats.bySize[5] || 0 },
+  { label: '6 × 6 gespeeld', getValue: (stats) => stats.bySize[6] || 0 },
+];
+
+function renderProfileStats() {
+  const stats = getStats();
+  profileStatsGrid.innerHTML = '';
+  PROFILE_STAT_DEFINITIONS.forEach(({ label, getValue }) => {
+    const card = document.createElement('div');
+    card.className = 'profile-stat';
+    card.innerHTML = `<strong>${getValue(stats)}</strong><span>${label}</span>`;
+    profileStatsGrid.appendChild(card);
+  });
 }
 
 // Na het invullen van naam (en eventueel code) hier verder: leaderboard laden, UI omzetten
 // naar "aan het spelen" en de puzzel starten.
 function proceedToGame(name) {
   state.player = { name, code: getPlayer()?.code ?? null };
-  $('#player-greeting').textContent = name;
-  showPlayerCodeHint();
+  updateProfileUI(name);
   updateCoverPreview();
   setupForm.hidden = true;
   playerBar.hidden = false;
@@ -790,6 +832,37 @@ $('#close-code-dialog').addEventListener('click', () => {
   if (name) proceedToGame(name);
 });
 
+// Het profiel is alleen voor speler-identiteit (naam/ID) en statistieken — de puzzel zelf
+// loopt door zolang de popup open staat, maar de klok pauzeert wel zolang je 'm bekijkt.
+profileButton.addEventListener('click', () => {
+  renderProfileStats();
+  cancelAnimationFrame(state.timerFrame);
+  profileDialog.showModal();
+});
+$('#close-profile').addEventListener('click', () => {
+  profileDialog.close();
+  resumeTickIfPlaying();
+});
+profileDialog.addEventListener('cancel', () => resumeTickIfPlaying());
+$('#profile-name-save').addEventListener('click', () => {
+  const name = profileNameInput.value.trim();
+  const player = getPlayer();
+  if (!name || !player || name === player.name) return;
+  if (containsBannedWord(name)) {
+    showToast('Kies een andere naam — dit woord is niet toegestaan.');
+    return;
+  }
+  updatePlayerName(name);
+  renamePlayerScores(player.code, name);
+  state.player = { ...state.player, name };
+  $('#name').value = name;
+  profileButtonName.textContent = name;
+  showToast('Naam bijgewerkt.');
+  // De net getoonde ranglijst kan de oude naam nog vasthouden — direct verversen zodat
+  // de wijziging meteen overal klopt, zonder op een volgende puzzel te moeten wachten.
+  loadLeaderboard(state.activeLeaderboardSize);
+});
+
 function openSettings() {
   state.shuffleToken++; // maakt een eventueel nog lopende schudanimatie ongeldig
   if (state.playing) stopGame();
@@ -800,7 +873,7 @@ function openSettings() {
   coverNextChallengeButton.hidden = true;
   coverPickPhotoButton.hidden = true;
   coverTitle.innerHTML = 'Kies je niveau<br>en begin te schuiven.';
-  coverSubtitle.textContent = 'Vul je naam in om te beginnen';
+  coverSubtitle.textContent = getPlayer() ? 'Kies niveau en foto, en start opnieuw' : 'Vul je naam in om te beginnen';
   frame.className = 'puzzle-frame is-locked';
 }
 $('#change-player').addEventListener('click', () => confirmStopIfPlaying(openSettings));
@@ -948,7 +1021,10 @@ loadLeaderboard(state.size);
 const existingPlayer = getPlayer();
 if (existingPlayer) {
   $('#name').value = existingPlayer.name;
-  $('.code-recovery').hidden = true;
+  state.player = { name: existingPlayer.name, code: existingPlayer.code };
+  updateProfileUI(existingPlayer.name);
+} else {
+  updateSetupFormForExistingPlayer();
 }
 syncFromServer().then(() => {
   renderProgress();

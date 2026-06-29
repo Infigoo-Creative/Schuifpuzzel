@@ -6,6 +6,7 @@ const PROGRESS_URL = 'progress.php';
 const PLAYER_KEY = 'schuifpuzzel-player';
 const COMPLETED_KEY = 'schuifpuzzel-completed';
 const LAST_TIMES_KEY = 'schuifpuzzel-last-times';
+const STATS_KEY = 'schuifpuzzel-stats';
 
 export function comboKey(size, imageId) {
   return `${size}-${imageId}`;
@@ -145,6 +146,51 @@ export async function syncFromServer() {
   } catch {
     // Geen server beschikbaar: lokale stand blijft gewoon gelden.
   }
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function readStats() {
+  try {
+    const stats = JSON.parse(localStorage.getItem(STATS_KEY));
+    return {
+      totalPlays: 0,
+      top10: 0,
+      top3: 0,
+      bySize: { 3: 0, 4: 0, 5: 0, 6: 0 },
+      today: { date: todayKey(), count: 0 },
+      ...stats,
+    };
+  } catch {
+    return { totalPlays: 0, top10: 0, top3: 0, bySize: { 3: 0, 4: 0, 5: 0, 6: 0 }, today: { date: todayKey(), count: 0 } };
+  }
+}
+
+// Lichte profielstatistieken, lokaal per apparaat — telt vanaf het moment dat deze
+// functionaliteit is toegevoegd (geen terugwerkende kracht over eerder gespeelde puzzels).
+// todayCount is al genormaliseerd: alleen geldig als het bewaarde datumstempel vandaag is.
+export function getStats() {
+  const stats = readStats();
+  return {
+    totalPlays: stats.totalPlays,
+    top10: stats.top10,
+    top3: stats.top3,
+    bySize: stats.bySize,
+    todayCount: stats.today.date === todayKey() ? stats.today.count : 0,
+  };
+}
+
+export function recordPlay({ size, rank }) {
+  const stats = readStats();
+  stats.totalPlays += 1;
+  stats.bySize[size] = (stats.bySize[size] || 0) + 1;
+  if (rank > 0 && rank <= 10) stats.top10 += 1;
+  if (rank > 0 && rank <= 3) stats.top3 += 1;
+  const today = todayKey();
+  stats.today = stats.today.date === today ? { date: today, count: stats.today.count + 1 } : { date: today, count: 1 };
+  localStorage.setItem(STATS_KEY, JSON.stringify(stats));
 }
 
 export async function markCompleted(size, imageId) {
