@@ -1,6 +1,7 @@
 import { neighbours, isSolved, shuffleWalk, solvedBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
 import { fetchRanking, saveScore, renamePlayerScores } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
+import { pickFinishLine } from './finish-lines.js';
 import {
   getPlayer, registerPlayer, recoverByCode, syncFromServer, markCompleted, updatePlayerName,
   countCompletedForSize, totalCompleted, isCompleted, getLastTime, setLastTime,
@@ -498,11 +499,11 @@ async function finishGame() {
 
   $('#final-time').textContent = formatTime(state.elapsed);
 
+  const diff = previousTime == null ? null : previousTime - Math.round(state.elapsed);
   const deltaEl = $('#time-delta');
-  if (previousTime == null) {
+  if (diff == null) {
     deltaEl.hidden = true;
   } else {
-    const diff = previousTime - Math.round(state.elapsed);
     deltaEl.hidden = false;
     if (diff > 0) {
       deltaEl.textContent = `${formatTime(Math.abs(diff))} sneller dan je vorige poging`;
@@ -516,7 +517,19 @@ async function finishGame() {
     }
   }
 
-  $('#result-title').textContent = rank > 0 && rank <= 10 ? `Plek ${rank}. Heel netjes!` : 'Lekker geschoven!';
+  // Eindtekst-categorie volgt de ranglijstpositie (of, zonder ranking, een verbeterd persoonlijk
+  // record); zie finish-lines.js voor de teksten zelf en hoe je er nieuwe aan toevoegt.
+  let finishCategory;
+  if (rank === 1) finishCategory = 'newFirst';
+  else if (rank === 2 || rank === 3) finishCategory = 'top3';
+  else if (rank === 4) finishCategory = 'almostPodium';
+  else if (rank > 4 && rank <= 10) finishCategory = 'top10';
+  else if (diff > 0) finishCategory = 'personalRecord';
+  else finishCategory = 'normal';
+
+  $('#result-title').textContent = rank > 0 && rank <= 10
+    ? `Plek ${rank}. ${pickFinishLine(finishCategory)}`
+    : pickFinishLine(finishCategory);
   let message = rank > 0 && rank <= 10
     ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
     : `Voltooid in ${state.moves} zetten.`;
