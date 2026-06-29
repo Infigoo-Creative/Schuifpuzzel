@@ -1,4 +1,4 @@
-import { neighbours, isSolved, shuffledBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
+import { neighbours, isSolved, shuffledBoard, solvedBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
 import { fetchRanking, saveScore, renamePlayerScores } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
 import {
@@ -15,6 +15,14 @@ const AUTOSOLVE_MAX_DELAY = 220;
 // Met Autosolve opgeloste puzzels mogen nooit een goede tijd in de ranglijst zetten:
 // de getoonde/opgeslagen tijd wordt geforceerd naar ruim boven het half uur.
 const AUTOSOLVE_MIN_REPORTED_TIME = 30 * 60 * 1000;
+
+// Korte, willekeurige schudanimatie vóór het spel echt begint — puur voor het gevoel dat de
+// puzzel "voor je neus" geschud wordt. Telt niet als zetten en de klok loopt dan nog niet.
+const SHUFFLE_STEP_MIN_DELAY = 28;
+const SHUFFLE_STEP_MAX_DELAY = 50;
+function shuffleStepsFor(size) {
+  return size * 8;
+}
 
 const GALLERY = [
   { id: 'papegaai', name: 'Papegaai', src: 'assets/gallery/papegaai.jpg' },
@@ -86,6 +94,7 @@ const state = {
   currentEntryId: null,
   activeLeaderboardSize: 3,
   startAfterPick: false,
+  shuffleToken: 0,
 };
 
 function emptyValue(size) {
@@ -305,23 +314,67 @@ function startGame() {
   coverPlayAgainButton.hidden = true;
   coverNextChallengeButton.hidden = true;
   coverPickPhotoButton.hidden = true;
-  state.board = shuffledBoard(state.size);
-  buildTiles();
+  const token = ++state.shuffleToken;
   state.moves = 0;
   state.elapsed = 0;
   state.usedAutosolve = false;
   movesEl.textContent = '0';
   timerEl.textContent = '00:00.0';
   frame.className = 'puzzle-frame is-playing';
-  state.playing = true;
-  stopButton.disabled = false;
-  helpButton.disabled = false;
+  state.playing = false; // wordt pas waar zodra de schudanimatie hieronder is afgelopen
+  stopButton.disabled = true;
+  helpButton.disabled = true;
+  autosolveButton.disabled = true;
   setHelpActive(false);
   stopAutosolve();
-  updateAutosolveVisibility();
-  autosolveButton.disabled = autosolveButton.hidden;
-  state.lastTick = performance.now();
-  tick();
+
+  state.board = solvedBoard(state.size);
+  buildTiles();
+
+  const finalBoard = shuffledBoard(state.size);
+  playShuffleAnimation(token, () => {
+    if (token !== state.shuffleToken) return; // ingehaald door een nieuwere start/actie
+    state.board = finalBoard;
+    renderBoard(false);
+    state.playing = true;
+    stopButton.disabled = false;
+    helpButton.disabled = false;
+    updateAutosolveVisibility();
+    autosolveButton.disabled = autosolveButton.hidden;
+    state.lastTick = performance.now();
+    tick();
+  });
+}
+
+// Korte, willekeurige schudbeweging vanaf de opgeloste staat — puur voor het gevoel dat de
+// puzzel "voor je neus" geschud wordt. Het bord waarmee straks echt gespeeld wordt ligt al
+// vast (finalBoard in startGame); na afloop springt het bord in één keer, zonder
+// overgangsanimatie, naar die echte (altijd oplosbare) schudding.
+function playShuffleAnimation(token, onDone) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    onDone();
+    return;
+  }
+  const size = state.size;
+  let stepsLeft = shuffleStepsFor(size);
+  let previous = -1;
+  const step = () => {
+    if (token !== state.shuffleToken || stepsLeft <= 0) {
+      onDone();
+      return;
+    }
+    const emptyIndex = state.board.indexOf(emptyValue(size));
+    const options = neighbours(emptyIndex, size).filter((n) => n !== previous);
+    const pool = options.length ? options : neighbours(emptyIndex, size);
+    const next = pool[Math.floor(Math.random() * pool.length)];
+    [state.board[emptyIndex], state.board[next]] = [state.board[next], state.board[emptyIndex]];
+    previous = emptyIndex;
+    renderBoard();
+    stepsLeft--;
+    const delay = SHUFFLE_STEP_MIN_DELAY + Math.random() * (SHUFFLE_STEP_MAX_DELAY - SHUFFLE_STEP_MIN_DELAY);
+    setTimeout(step, delay);
+  };
+  step();
 }
 
 // De tijd loopt op basis van verstreken delta's (niet vanaf één vast startmoment), zodat de
@@ -727,6 +780,7 @@ $('#close-code-dialog').addEventListener('click', () => {
 });
 
 function openSettings() {
+  state.shuffleToken++; // maakt een eventueel nog lopende schudanimatie ongeldig
   if (state.playing) stopGame();
   playerBar.hidden = true;
   setupForm.hidden = false;
