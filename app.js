@@ -77,7 +77,6 @@ const profileDialog = $('#profile-dialog');
 const profileNameInput = $('#profile-name-input');
 const profileIdValue = $('#profile-id-value');
 const profileStatsGrid = $('#profile-stats-grid');
-const progressFill = $('#progress-fill');
 const progressText = $('#progress-text');
 const nextChallengeButton = $('#next-challenge');
 const confirmStopDialog = $('#confirm-stop-dialog');
@@ -643,8 +642,12 @@ function updateCoverPreview() {
 function renderProgressSummary() {
   const total = SIZES.length * GALLERY.length;
   const done = totalCompleted();
-  progressFill.style.width = `${(done / total) * 100}%`;
-  progressText.textContent = `${done} van ${total} levels voltooid`;
+  const text = `${done} van ${total} levels voltooid`;
+  // Dezelfde voortgangsbalk staat ook bovenaan de statistieken in het profiel — beide
+  // exemplaren bijwerken zodra de voortgang verandert, zodat ze nooit uit de pas lopen.
+  document.querySelectorAll('.progress-fill').forEach((el) => { el.style.width = `${(done / total) * 100}%`; });
+  progressText.textContent = text;
+  $('#profile-progress-text').textContent = text;
 }
 
 function renderSizeProgress() {
@@ -736,23 +739,23 @@ function updateProfileUI(name) {
 }
 
 const PROFILE_STAT_DEFINITIONS = [
-  { label: 'Puzzels gespeeld', getValue: (stats) => stats.totalPlays },
-  { label: 'Top 10-noteringen', getValue: (stats) => stats.top10 },
-  { label: 'Top 3-noteringen', getValue: (stats) => stats.top3 },
-  { label: 'Vandaag gespeeld', getValue: (stats) => stats.todayCount },
-  { label: '3 × 3 gespeeld', getValue: (stats) => stats.bySize[3] || 0 },
-  { label: '4 × 4 gespeeld', getValue: (stats) => stats.bySize[4] || 0 },
-  { label: '5 × 5 gespeeld', getValue: (stats) => stats.bySize[5] || 0 },
-  { label: '6 × 6 gespeeld', getValue: (stats) => stats.bySize[6] || 0 },
+  { icon: '🧩', label: 'Puzzels gespeeld', getValue: (stats) => stats.totalPlays },
+  { icon: '🏆', label: 'Top 10-noteringen', getValue: (stats) => stats.top10 },
+  { icon: '🥇', label: 'Top 3-noteringen', getValue: (stats) => stats.top3 },
+  { icon: '📅', label: 'Vandaag gespeeld', getValue: (stats) => stats.todayCount },
+  { icon: '🟢', label: '3 × 3 gespeeld', getValue: (stats) => stats.bySize[3] || 0 },
+  { icon: '🟡', label: '4 × 4 gespeeld', getValue: (stats) => stats.bySize[4] || 0 },
+  { icon: '🔴', label: '5 × 5 gespeeld', getValue: (stats) => stats.bySize[5] || 0 },
+  { icon: '⚫', label: '6 × 6 gespeeld', getValue: (stats) => stats.bySize[6] || 0 },
 ];
 
 function renderProfileStats() {
   const stats = getStats();
   profileStatsGrid.innerHTML = '';
-  PROFILE_STAT_DEFINITIONS.forEach(({ label, getValue }) => {
+  PROFILE_STAT_DEFINITIONS.forEach(({ icon, label, getValue }) => {
     const card = document.createElement('div');
     card.className = 'profile-stat';
-    card.innerHTML = `<strong>${getValue(stats)}</strong><span>${label}</span>`;
+    card.innerHTML = `<strong>${getValue(stats)}</strong><span>${icon} ${label}</span>`;
     profileStatsGrid.appendChild(card);
   });
 }
@@ -836,6 +839,7 @@ $('#close-code-dialog').addEventListener('click', () => {
 // loopt door zolang de popup open staat, maar de klok pauzeert wel zolang je 'm bekijkt.
 profileButton.addEventListener('click', () => {
   renderProfileStats();
+  renderProgress(); // voortgangsbalk + per-niveau stippen in het profiel zijn dezelfde elementen als op de homepage
   cancelAnimationFrame(state.timerFrame);
   profileDialog.showModal();
 });
