@@ -346,10 +346,11 @@ function startGame() {
   });
 }
 
-// Toont een vlotte steekproef van de stappen uit de random walk (in plaats van alle honderden
-// stappen één voor één, wat te lang zou duren) — altijd inclusief de allerlaatste stap, zodat
-// het bord op natuurlijke wijze in de echte schudding eindigt. Telt niet als zetten en de klok
-// staat nog stil; puur voor het gevoel dat de puzzel "voor je neus" geschud wordt.
+// Toont ÉLKE stap van de random walk (geen steekproef/overslaan meer) — elke zichtbare
+// beweging is daardoor altijd precies één tegel naar het aangrenzende lege vakje, echt
+// schuivend in plaats van kriskras over het bord springend. De totale duur blijft gelijk aan
+// voorheen: hoe meer echte stappen er zijn (groter bord), hoe korter elke afzonderlijke stap
+// duurt. Telt niet als zetten en de klok staat nog stil.
 function playShuffleAnimation(walk, token, onDone) {
   const lastIndex = walk.length - 1;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || lastIndex === 0) {
@@ -358,20 +359,19 @@ function playShuffleAnimation(walk, token, onDone) {
     onDone();
     return;
   }
-  const frameCount = Math.min(shuffleStepsFor(state.size), lastIndex);
-  const frameIndices = Array.from({ length: frameCount }, (_, i) => Math.round(((i + 1) / frameCount) * lastIndex));
-  let cursor = 0;
+  const targetDuration = shuffleStepsFor(state.size) * ((SHUFFLE_STEP_MIN_DELAY + SHUFFLE_STEP_MAX_DELAY) / 2);
+  const stepDelay = Math.max(4, targetDuration / lastIndex);
+  let cursor = 1; // index 0 is de opgeloste staat, al getoond
   const step = () => {
     if (token !== state.shuffleToken) return;
-    if (cursor >= frameIndices.length) {
+    if (cursor > lastIndex) {
       onDone();
       return;
     }
-    state.board = walk[frameIndices[cursor]];
+    state.board = walk[cursor];
     renderBoard();
     cursor++;
-    const delay = SHUFFLE_STEP_MIN_DELAY + Math.random() * (SHUFFLE_STEP_MAX_DELAY - SHUFFLE_STEP_MIN_DELAY);
-    setTimeout(step, delay);
+    setTimeout(step, stepDelay);
   };
   step();
 }
