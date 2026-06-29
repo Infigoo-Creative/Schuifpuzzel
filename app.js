@@ -1,4 +1,4 @@
-import { neighbours, isSolved, shuffledBoard, solvedBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
+import { neighbours, isSolved, shuffleWalk, solvedBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
 import { fetchRanking, saveScore, renamePlayerScores } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
 import {
@@ -331,11 +331,11 @@ function startGame() {
   state.board = solvedBoard(state.size);
   buildTiles();
 
-  const finalBoard = shuffledBoard(state.size);
-  playShuffleAnimation(token, () => {
+  // Eén doorlopende random walk is zowel de animatie als de bron van het echte speelbord —
+  // het laatste getoonde frame ís het eindbord, dus geen losse berekening en geen sprong.
+  const walk = shuffleWalk(state.size);
+  playShuffleAnimation(walk, token, () => {
     if (token !== state.shuffleToken) return; // ingehaald door een nieuwere start/actie
-    state.board = finalBoard;
-    renderBoard(false);
     state.playing = true;
     stopButton.disabled = false;
     helpButton.disabled = false;
@@ -346,31 +346,30 @@ function startGame() {
   });
 }
 
-// Korte, willekeurige schudbeweging vanaf de opgeloste staat — puur voor het gevoel dat de
-// puzzel "voor je neus" geschud wordt. Het bord waarmee straks echt gespeeld wordt ligt al
-// vast (finalBoard in startGame); na afloop springt het bord in één keer, zonder
-// overgangsanimatie, naar die echte (altijd oplosbare) schudding.
-function playShuffleAnimation(token, onDone) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+// Toont een vlotte steekproef van de stappen uit de random walk (in plaats van alle honderden
+// stappen één voor één, wat te lang zou duren) — altijd inclusief de allerlaatste stap, zodat
+// het bord op natuurlijke wijze in de echte schudding eindigt. Telt niet als zetten en de klok
+// staat nog stil; puur voor het gevoel dat de puzzel "voor je neus" geschud wordt.
+function playShuffleAnimation(walk, token, onDone) {
+  const lastIndex = walk.length - 1;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || lastIndex === 0) {
+    state.board = walk[lastIndex];
+    renderBoard(false);
     onDone();
     return;
   }
-  const size = state.size;
-  let stepsLeft = shuffleStepsFor(size);
-  let previous = -1;
+  const frameCount = Math.min(shuffleStepsFor(state.size), lastIndex);
+  const frameIndices = Array.from({ length: frameCount }, (_, i) => Math.round(((i + 1) / frameCount) * lastIndex));
+  let cursor = 0;
   const step = () => {
-    if (token !== state.shuffleToken || stepsLeft <= 0) {
+    if (token !== state.shuffleToken) return;
+    if (cursor >= frameIndices.length) {
       onDone();
       return;
     }
-    const emptyIndex = state.board.indexOf(emptyValue(size));
-    const options = neighbours(emptyIndex, size).filter((n) => n !== previous);
-    const pool = options.length ? options : neighbours(emptyIndex, size);
-    const next = pool[Math.floor(Math.random() * pool.length)];
-    [state.board[emptyIndex], state.board[next]] = [state.board[next], state.board[emptyIndex]];
-    previous = emptyIndex;
+    state.board = walk[frameIndices[cursor]];
     renderBoard();
-    stepsLeft--;
+    cursor++;
     const delay = SHUFFLE_STEP_MIN_DELAY + Math.random() * (SHUFFLE_STEP_MAX_DELAY - SHUFFLE_STEP_MIN_DELAY);
     setTimeout(step, delay);
   };

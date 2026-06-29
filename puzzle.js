@@ -16,21 +16,33 @@ export function isSolved(board) {
   return board.every((value, index) => value === index);
 }
 
-// Schudt door random walks vanaf de opgeloste staat: elke uitkomst is per definitie oplosbaar.
-export function shuffledBoard(size, steps = size * size * 25) {
+// Schudt door een random walk vanaf de opgeloste staat (elke uitkomst is per definitie
+// oplosbaar) en geeft élke tussenliggende bordstaat terug — niet alleen het eindresultaat.
+// Zo kan de UI het schudden zelf animeren: het bord dat je aan het einde van de animatie ziet
+// is dan letterlijk (niet slechts toevallig) hetzelfde bord als waarmee gespeeld wordt, zonder
+// dat er ooit naar een los, onafhankelijk berekend eindbord gesprongen moet worden.
+export function shuffleWalk(size, steps = size * size * 25) {
   const empty = size * size - 1;
   let board = solvedBoard(size);
   let emptyIndex = empty;
   let previous = -1;
+  const history = [board];
   for (let i = 0; i < steps; i++) {
     const options = neighbours(emptyIndex, size).filter((n) => n !== previous);
     const pool = options.length ? options : neighbours(emptyIndex, size);
     const next = pool[Math.floor(Math.random() * pool.length)];
+    board = board.slice();
     [board[emptyIndex], board[next]] = [board[next], board[emptyIndex]];
     previous = emptyIndex;
     emptyIndex = next;
+    history.push(board);
   }
-  return isSolved(board) ? shuffledBoard(size, 20) : board;
+  return isSolved(board) ? shuffleWalk(size, 20) : history;
+}
+
+export function shuffledBoard(size, steps = size * size * 25) {
+  const history = shuffleWalk(size, steps);
+  return history[history.length - 1];
 }
 
 export function trySwap(board, size, value) {
