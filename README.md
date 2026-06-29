@@ -40,6 +40,7 @@ De meegeleverde `.htaccess`-bestanden blokkeren op Apache directe toegang tot `c
 - `api.php`, `progress.php`, `admin.php`, `config.php` — backend voor de gedeelde ranglijst, voortgang en beheer.
 - `manifest.json`, `assets/icon*.png`, `assets/apple-touch-icon.png` — "toevoegen aan beginscherm"/PWA-iconen voor mobiel (zie ook de `safe-area-top`-balk en headerpadding in `styles.css` voor de notch/camera-uitsparing).
 - `version.json` — automatisch gegenereerd build-nummer + datum (zie `.git/hooks/pre-commit`), getoond als klein stempel onderaan de pagina.
+- `BACKLOG.md` — ideeën voor latere uitbreidingen; alleen ter inspiratie, niet automatisch uitvoeren.
 
 ## Voortgang zonder account
 
