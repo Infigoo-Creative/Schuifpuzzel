@@ -527,9 +527,10 @@ async function finishGame() {
   else if (diff > 0) finishCategory = 'personalRecord';
   else finishCategory = 'normal';
 
-  $('#result-title').textContent = rank > 0 && rank <= 10
-    ? `Plek ${rank}. ${pickFinishLine(finishCategory)}`
-    : pickFinishLine(finishCategory);
+  const resultRankEl = $('#result-rank');
+  resultRankEl.hidden = !(rank > 0 && rank <= 10);
+  if (!resultRankEl.hidden) resultRankEl.textContent = `Plek ${rank}`;
+  $('#result-title').textContent = pickFinishLine(finishCategory);
   let message = rank > 0 && rank <= 10
     ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
     : `Voltooid in ${state.moves} zetten.`;
