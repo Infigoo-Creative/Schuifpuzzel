@@ -982,7 +982,12 @@ setupForm.addEventListener('submit', async (event) => {
     selectImage(combo.photo);
     state.isDailyChallenge = true;
   } else {
-    state.size = Number(new FormData(setupForm).get('size'));
+    const pickedSize = new FormData(setupForm).get('size');
+    if (!pickedSize) {
+      showToast('Kies eerst een moeilijkheidsgraad.');
+      return;
+    }
+    state.size = Number(pickedSize);
     state.isDailyChallenge = false;
   }
 
