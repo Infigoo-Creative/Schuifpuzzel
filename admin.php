@@ -26,12 +26,38 @@ function resolveSize(): int {
     return in_array($size, ALLOWED_SIZES, true) ? $size : 3;
 }
 
+function resolveDaily(): ?string {
+    $raw = preg_replace('/[^0-9-]/', '', (string)($_GET['daily'] ?? $_POST['daily'] ?? ''));
+    return (strlen($raw) === 10 && preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) ? $raw : null;
+}
+
+function dailyDates(): array {
+    $files = glob(__DIR__ . '/data/scores-daily-*.json') ?: [];
+    $dates = [];
+    foreach ($files as $file) {
+        if (preg_match('/scores-daily-(\d{4}-\d{2}-\d{2})\.json$/', $file, $m)) {
+            $dates[] = $m[1];
+        }
+    }
+    rsort($dates);
+    return $dates;
+}
+
 function dataFileFor(int $size): string {
     return __DIR__ . "/data/scores-{$size}x{$size}.json";
 }
 
+function dailyFileFor(string $date): string {
+    return __DIR__ . "/data/scores-daily-{$date}.json";
+}
+
 function redirectAdmin(int $size): void {
     header('Location: admin.php?size=' . $size);
+    exit;
+}
+
+function redirectDaily(string $date): void {
+    header('Location: admin.php?daily=' . $date);
     exit;
 }
 
@@ -82,9 +108,13 @@ if (empty($_SESSION['csrf'])) {
 }
 
 $size = resolveSize();
+$daily = resolveDaily();
+$dailyDates = dailyDates();
+$isDaily = $daily !== null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = (string)($_POST['action'] ?? '');
+    $postDaily = resolveDaily();
 
     if ($action === 'login') {
         $username = (string)($_POST['username'] ?? '');
@@ -102,10 +132,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'De sessie is verlopen. Vernieuw de pagina en probeer opnieuw.';
         } elseif ($action === 'delete') {
             $id = preg_replace('/[^a-zA-Z0-9-]/', '', (string)($_POST['id'] ?? ''));
-            if ($id !== '' && deleteScore(dataFileFor($size), $id)) {
-                $_SESSION['notice'] = 'De score is verwijderd.';
+            if ($postDaily !== null) {
+                if ($id !== '' && deleteScore(dailyFileFor($postDaily), $id)) {
+                    $_SESSION['notice'] = 'De score is verwijderd.';
+                }
+                redirectDaily($postDaily);
+            } else {
+                if ($id !== '' && deleteScore(dataFileFor($size), $id)) {
+                    $_SESSION['notice'] = 'De score is verwijderd.';
+                }
+                redirectAdmin($size);
             }
-            redirectAdmin($size);
         } elseif ($action === 'logout') {
             $_SESSION = [];
             session_destroy();
@@ -115,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $loggedIn = !empty($_SESSION['admin']);
-$scores = $loggedIn ? readAdminScores(dataFileFor($size)) : [];
+$scores = $loggedIn ? readAdminScores($isDaily ? dailyFileFor($daily) : dataFileFor($size)) : [];
 $error ??= '';
 $notice = (string)($_SESSION['notice'] ?? '');
 unset($_SESSION['notice']);
@@ -167,7 +204,7 @@ unset($_SESSION['notice']);
   </style>
 </head>
 <body>
-  <header class="header"><strong>Schuifpuzzel</strong><span>Beheer · <?= $size ?> × <?= $size ?></span></header>
+  <header class="header"><strong>Schuifpuzzel</strong><span>Beheer · <?= $isDaily ? 'Dagelijks ' . e($daily) : $size . ' × ' . $size ?></span></header>
   <?php if (!$loggedIn): ?>
     <main class="login">
       <p class="eyebrow">Beveiligd beheer</p>
@@ -190,11 +227,17 @@ unset($_SESSION['notice']);
         <div>
           <p class="eyebrow">Schuifpuzzel</p>
           <h1>Deelnemers <span class="count"><?= count($scores) ?></span></h1>
-          <p class="subtitle">Scores voor het <?= $size ?> × <?= $size ?>-niveau. Verwijderen is direct definitief.</p>
+          <p class="subtitle"><?= $isDaily ? 'Dagelijkse scores van ' . e($daily) . '.' : 'Scores voor het ' . $size . ' × ' . $size . '-niveau.' ?> Verwijderen is direct definitief.</p>
           <nav class="size-tabs">
             <?php foreach (ALLOWED_SIZES as $option): ?>
-              <a class="<?= $option === $size ? 'is-active' : '' ?>" href="admin.php?size=<?= $option ?>"><?= $option ?> × <?= $option ?></a>
+              <a class="<?= !$isDaily && $option === $size ? 'is-active' : '' ?>" href="admin.php?size=<?= $option ?>"><?= $option ?> × <?= $option ?></a>
             <?php endforeach; ?>
+            <?php if ($dailyDates): ?>
+              <span style="border-left:1px solid var(--line);margin:0 4px"></span>
+              <?php foreach ($dailyDates as $date): ?>
+                <a class="<?= $isDaily && $daily === $date ? 'is-active' : '' ?>" href="admin.php?daily=<?= e($date) ?>" style="<?= $isDaily && $daily === $date ? '' : 'background:rgba(255,122,69,.08);border-color:rgba(255,122,69,.3);color:#c94a20' ?>">📅 <?= e($date) ?></a>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </nav>
         </div>
         <form method="post"><input type="hidden" name="action" value="logout"><input type="hidden" name="csrf" value="<?= e((string)$_SESSION['csrf']) ?>"><button class="logout" type="submit">Uitloggen</button></form>
@@ -219,7 +262,11 @@ unset($_SESSION['notice']);
                 <td>
                   <form method="post" onsubmit="return confirm('Deze score definitief verwijderen?')">
                     <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="size" value="<?= $size ?>">
+                    <?php if ($isDaily): ?>
+                      <input type="hidden" name="daily" value="<?= e($daily) ?>">
+                    <?php else: ?>
+                      <input type="hidden" name="size" value="<?= $size ?>">
+                    <?php endif; ?>
                     <input type="hidden" name="csrf" value="<?= e((string)$_SESSION['csrf']) ?>">
                     <input type="hidden" name="id" value="<?= e((string)($score['id'] ?? '')) ?>">
                     <button class="trash" type="submit" aria-label="Score van <?= e((string)($score['name'] ?? 'deze deelnemer')) ?> verwijderen" title="Score verwijderen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 10v7m4-7v7"/></svg></button>

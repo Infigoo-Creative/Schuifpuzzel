@@ -349,6 +349,8 @@ function startGame() {
   movesEl.textContent = '0';
   timerEl.textContent = '00:00.0';
   frame.className = 'puzzle-frame is-playing';
+  const dailyBadgeEl = $('#daily-badge');
+  if (dailyBadgeEl) dailyBadgeEl.hidden = !state.isDailyChallenge;
   state.playing = false; // wordt pas waar zodra de schudanimatie hieronder is afgelopen
   stopButton.disabled = true;
   helpButton.disabled = true;
@@ -503,7 +505,7 @@ function getDailyCombo() {
 const SIZE_LABELS = { 3: 'Makkelijk · 3 × 3', 4: 'Gemiddeld · 4 × 4', 5: 'Moeilijk · 5 × 5', 6: 'Expert · 6 × 6' };
 
 function renderDailyCard() {
-  const card = $('#daily-card');
+  const card = $('#daily-size-tile');
   if (!card) return;
   const player = getPlayer();
   card.hidden = !player;
@@ -514,18 +516,18 @@ function renderDailyCard() {
   const record = getDailyRecord(dailyDateKey());
   const done = !!record;
 
-  $('#daily-card-thumb').src = gallery?.src ?? '';
-  $('#daily-card-thumb').alt = gallery?.name ?? '';
-  $('#daily-card-photo').textContent = gallery?.name ?? '';
-  $('#daily-card-level').textContent = `${SIZE_LABELS[combo.size]} · ${new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}`;
+  const thumbEl = $('#daily-card-thumb');
+  if (thumbEl) { thumbEl.src = gallery?.src ?? ''; thumbEl.alt = gallery?.name ?? ''; }
+  const photoEl = $('#daily-card-photo');
+  if (photoEl) photoEl.textContent = gallery?.name ?? '';
+  $('#daily-card-level').textContent = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
 
   $('#daily-card-active').hidden = done;
   $('#daily-card-done').hidden = !done;
 
   if (done) {
     const stars = '★'.repeat(record.stars ?? 0) + '☆'.repeat(5 - (record.stars ?? 0));
-    const rankText = record.rank ? `Plek ${record.rank}` : 'Score opgeslagen';
-    $('#daily-done-summary').textContent = `${rankText} · ${formatTime(record.time)} · ${stars}`;
+    $('#daily-done-summary').textContent = stars;
   }
 }
 
@@ -723,6 +725,22 @@ async function finishGame() {
     $('#result-eyebrow-text').textContent = 'ALLES VOLTOOID';
     $('#result-title').textContent = 'Jij hebt ze allemaal!';
     message = `Alle 36 levels uitgespeeld — elke foto, op elk niveau. Met ${state.moves} zetten leg je deze laatste mooi af. Knap gedaan!`;
+  }
+  if (isDaily) {
+    nextChallengeButton.hidden = false;
+    nextChallengeButton.innerHTML = 'Dezelfde puzzel nog eens <span>→</span>';
+    nextChallengeButton.onclick = () => { dialog.close(); startGame(); };
+    coverNextChallengeButton.hidden = true;
+    const pickOtherBtn = $('#pick-other-photo');
+    pickOtherBtn.innerHTML = 'Bekijk de ranglijst <span>→</span>';
+    pickOtherBtn.dataset.action = 'ranking';
+    $('.result-secondary-actions').hidden = true;
+    if (!justCompletedAll) message = 'Kom morgen terug voor een nieuwe dagelijkse puzzel, of speel één van de andere niveaus.';
+  } else {
+    const pickOtherBtn = $('#pick-other-photo');
+    pickOtherBtn.innerHTML = 'Kies foto <span>→</span>';
+    delete pickOtherBtn.dataset.action;
+    $('.result-secondary-actions').hidden = false;
   }
   $('#result-message').textContent = message;
   dialog.showModal();
@@ -954,7 +972,16 @@ setupForm.addEventListener('submit', async (event) => {
     showToast('Kies een andere naam — dit woord is niet toegestaan.');
     return;
   }
-  state.size = Number(new FormData(setupForm).get('size'));
+  const isDailyTileSelected = $('#daily-size-tile')?.classList.contains('is-selected');
+  if (isDailyTileSelected) {
+    const combo = getDailyCombo();
+    state.size = combo.size;
+    selectImage(combo.photo);
+    state.isDailyChallenge = true;
+  } else {
+    state.size = Number(new FormData(setupForm).get('size'));
+    state.isDailyChallenge = false;
+  }
 
   const enteredCode = playerCodeInput.value.trim();
   const existingPlayer = getPlayer();
@@ -1086,7 +1113,15 @@ function openPhotoPicker() {
 }
 $('#close-dialog').addEventListener('click', () => dialog.close());
 $('#play-again').addEventListener('click', () => { dialog.close(); startGame(); });
-$('#pick-other-photo').addEventListener('click', openPhotoPicker);
+$('#pick-other-photo').addEventListener('click', () => {
+  if ($('#pick-other-photo').dataset.action === 'ranking') {
+    dialog.close();
+    loadLeaderboard('daily');
+    document.querySelector('.leaderboard-section')?.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    openPhotoPicker();
+  }
+});
 coverPickPhotoButton.addEventListener('click', openPhotoPicker);
 $('#view-ranking').addEventListener('click', () => { dialog.close(); $('.leaderboard-section').scrollIntoView(); });
 
@@ -1097,16 +1132,21 @@ document.querySelectorAll('.tab').forEach((tab) => {
   });
 });
 
-$('#daily-start-button')?.addEventListener('click', () => {
-  if (!state.player) return;
-  const combo = getDailyCombo();
-  const radio = document.querySelector(`input[name=size][value="${combo.size}"]`);
-  if (radio) radio.checked = true;
-  selectImage(combo.photo);
-  state.isDailyChallenge = true;
-  const dailyBadgeEl = $('#daily-badge');
-  if (dailyBadgeEl) dailyBadgeEl.hidden = false;
-  if (state.playing) confirmStopIfPlaying(startGame); else startGame();
+$('#daily-card-active')?.addEventListener('click', () => {
+  const tile = $('#daily-size-tile');
+  if (!tile || tile.hidden) return;
+  tile.classList.add('is-selected');
+  document.querySelectorAll('input[name=size]').forEach((r) => { r.checked = false; });
+  const pickerGroup = $('#photo-picker-group');
+  if (pickerGroup) pickerGroup.hidden = true;
+});
+
+document.querySelectorAll('input[name=size]').forEach((radio) => {
+  radio.addEventListener('change', () => {
+    $('#daily-size-tile')?.classList.remove('is-selected');
+    const pickerGroup = $('#photo-picker-group');
+    if (pickerGroup) pickerGroup.hidden = false;
+  });
 });
 
 $('#daily-done-leaderboard')?.addEventListener('click', () => {

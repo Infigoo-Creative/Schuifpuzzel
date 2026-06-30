@@ -60,32 +60,25 @@
           <span id="progress-text">0 van 36 levels voltooid</span>
         </div>
 
-        <div class="daily-card" id="daily-card" hidden>
-          <div class="daily-card-active" id="daily-card-active">
-            <p class="daily-card-label">PUZZEL VAN DE DAG</p>
-            <div class="daily-card-content">
-              <img class="daily-card-thumb" id="daily-card-thumb" src="" alt="">
-              <div class="daily-card-info">
-                <strong id="daily-card-photo"></strong>
-                <span id="daily-card-level"></span>
-              </div>
-              <button class="button" id="daily-start-button" type="button">Start <span>→</span></button>
-            </div>
-          </div>
-          <div class="daily-card-done" id="daily-card-done" hidden>
-            <div class="daily-done-check">✓</div>
-            <div class="daily-done-details">
-              <strong>Vandaag gedaan</strong>
-              <span id="daily-done-summary"></span>
-            </div>
-            <button type="button" class="text-button" id="daily-done-leaderboard">Dagranglijst →</button>
-          </div>
-        </div>
-
         <form id="setup-form" class="setup-form">
           <fieldset class="field-group">
             <legend>Moeilijkheidsgraad</legend>
             <div class="size-options" id="size-options">
+              <div class="daily-size-tile" id="daily-size-tile" hidden>
+                <div class="daily-card-active" id="daily-card-active">
+                  <img id="daily-card-thumb" src="" alt="" hidden>
+                  <span id="daily-card-photo" hidden></span>
+                  <svg class="daily-tile-icon" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  Vandaag
+                  <small id="daily-card-level"></small>
+                </div>
+                <div class="daily-card-done" id="daily-card-done" hidden>
+                  <div class="daily-done-check">✓</div>
+                  Vandaag
+                  <small id="daily-done-summary"></small>
+                  <button type="button" class="text-button" id="daily-done-leaderboard" style="font-size:10px;margin-top:2px">Ranglijst →</button>
+                </div>
+              </div>
               <label><input type="radio" name="size" value="3" checked><span class="size-label level-progress-block">Makkelijk<small>3 × 3</small><span class="size-progress" data-size="3"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
               <label><input type="radio" name="size" value="4"><span class="size-label level-progress-block">Gemiddeld<small>4 × 4</small><span class="size-progress" data-size="4"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
               <label><input type="radio" name="size" value="5"><span class="size-label level-progress-block">Moeilijk<small>5 × 5</small><span class="size-progress" data-size="5"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
@@ -93,7 +86,7 @@
             </div>
           </fieldset>
 
-          <div class="field-group">
+          <div class="field-group" id="photo-picker-group">
             <span class="upload-label">Foto</span>
             <button type="button" id="open-gallery" class="photo-picker">
               <img id="photo-picker-preview" src="assets/gallery/papegaai.jpg" alt="">
