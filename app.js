@@ -505,11 +505,16 @@ function getDailyCombo() {
 const SIZE_LABELS = { 3: 'Makkelijk · 3 × 3', 4: 'Gemiddeld · 4 × 4', 5: 'Moeilijk · 5 × 5', 6: 'Expert · 6 × 6' };
 
 function renderDailyCard() {
-  const card = $('#daily-size-tile');
-  if (!card) return;
+  const activeEl = $('#daily-card-active');
+  const doneEl = $('#daily-card-done');
+  if (!activeEl || !doneEl) return;
+
   const player = getPlayer();
-  card.hidden = !player;
-  if (!player) return;
+  if (!player) {
+    activeEl.hidden = true;
+    doneEl.hidden = true;
+    return;
+  }
 
   const combo = getDailyCombo();
   const gallery = GALLERY.find((g) => g.id === combo.photo);
@@ -520,14 +525,16 @@ function renderDailyCard() {
   if (thumbEl) { thumbEl.src = gallery?.src ?? ''; thumbEl.alt = gallery?.name ?? ''; }
   const photoEl = $('#daily-card-photo');
   if (photoEl) photoEl.textContent = gallery?.name ?? '';
-  $('#daily-card-level').textContent = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+  const levelEl = $('#daily-card-level');
+  if (levelEl) levelEl.textContent = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
 
-  $('#daily-card-active').hidden = done;
-  $('#daily-card-done').hidden = !done;
+  activeEl.hidden = done;
+  doneEl.hidden = !done;
 
   if (done) {
     const stars = '★'.repeat(record.stars ?? 0) + '☆'.repeat(5 - (record.stars ?? 0));
-    $('#daily-done-summary').textContent = stars;
+    const summaryEl = $('#daily-done-summary');
+    if (summaryEl) summaryEl.textContent = stars;
   }
 }
 
@@ -975,8 +982,13 @@ setupForm.addEventListener('submit', async (event) => {
     showToast('Kies een andere naam — dit woord is niet toegestaan.');
     return;
   }
-  const isDailyTileSelected = $('#daily-size-tile')?.classList.contains('is-selected');
-  if (isDailyTileSelected) {
+  const isDailySelected = $('#card-daily')?.classList.contains('is-selected');
+  const isLevelsSelected = $('#card-levels')?.classList.contains('is-selected');
+  if (!isDailySelected && !isLevelsSelected) {
+    showToast('Kies eerst een spelvorm.');
+    return;
+  }
+  if (isDailySelected) {
     const combo = getDailyCombo();
     state.size = combo.size;
     selectImage(combo.photo);
@@ -984,7 +996,7 @@ setupForm.addEventListener('submit', async (event) => {
   } else {
     const pickedSize = new FormData(setupForm).get('size');
     if (!pickedSize) {
-      showToast('Kies eerst een moeilijkheidsgraad.');
+      showToast('Kies eerst een niveau.');
       return;
     }
     state.size = Number(pickedSize);
@@ -1072,7 +1084,7 @@ $('#profile-name-save').addEventListener('click', () => {
 });
 
 function openSettings() {
-  state.shuffleToken++; // maakt een eventueel nog lopende schudanimatie ongeldig
+  state.shuffleToken++;
   if (state.playing) stopGame();
   playerBar.hidden = true;
   setupForm.hidden = false;
@@ -1083,6 +1095,18 @@ function openSettings() {
   coverTitle.innerHTML = 'Kies je niveau<br>en begin te schuiven.';
   coverSubtitle.textContent = getPlayer() ? 'Kies niveau en foto, en start opnieuw' : 'Vul je naam in om te beginnen';
   frame.className = 'puzzle-frame is-locked';
+  // Herstel de wizardstatus op basis van de vorige spelvorm
+  if (state.isDailyChallenge) {
+    selectMode('daily');
+  } else if (state.size) {
+    selectMode('levels');
+    const radio = document.querySelector(`input[name=size][value="${state.size}"]`);
+    if (radio) { radio.checked = true; }
+    const stepPhoto = $('#step-photo');
+    if (stepPhoto) stepPhoto.hidden = false;
+    const submitBtn = $('#setup-submit');
+    if (submitBtn) submitBtn.hidden = false;
+  }
 }
 $('#change-player').addEventListener('click', () => confirmStopIfPlaying(openSettings));
 coverStartButton.addEventListener('click', startGame);
@@ -1140,27 +1164,45 @@ document.querySelectorAll('.tab').forEach((tab) => {
   });
 });
 
-function selectDailyTile() {
-  const tile = $('#daily-size-tile');
-  if (!tile || tile.hidden) return;
-  tile.classList.add('is-selected');
-  document.querySelectorAll('input[name=size]').forEach((r) => { r.checked = false; });
-  const pickerGroup = $('#photo-picker-group');
-  if (pickerGroup) pickerGroup.hidden = true;
+function selectMode(mode) {
+  const cardDaily = $('#card-daily');
+  const cardLevels = $('#card-levels');
+  const stepLevels = $('#step-levels');
+  const stepPhoto = $('#step-photo');
+  const submitBtn = $('#setup-submit');
+
+  cardDaily?.classList.toggle('is-selected', mode === 'daily');
+  cardLevels?.classList.toggle('is-selected', mode === 'levels');
+  cardDaily?.setAttribute('aria-pressed', String(mode === 'daily'));
+  cardLevels?.setAttribute('aria-pressed', String(mode === 'levels'));
+
+  if (mode === 'daily') {
+    if (stepLevels) stepLevels.hidden = true;
+    if (stepPhoto) stepPhoto.hidden = true;
+    if (submitBtn) submitBtn.hidden = false;
+    document.querySelectorAll('input[name=size]').forEach((r) => { r.checked = false; });
+  } else {
+    if (stepLevels) stepLevels.hidden = false;
+    if (submitBtn) submitBtn.hidden = true;
+  }
 }
 
-$('#daily-card-active')?.addEventListener('click', selectDailyTile);
-$('#daily-card-done')?.addEventListener('click', selectDailyTile);
+$('#card-daily')?.addEventListener('click', () => selectMode('daily'));
+$('#card-levels')?.addEventListener('click', () => selectMode('levels'));
+$('#card-daily')?.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); selectMode('daily'); } });
+$('#card-levels')?.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); selectMode('levels'); } });
 
 document.querySelectorAll('input[name=size]').forEach((radio) => {
   radio.addEventListener('change', () => {
-    $('#daily-size-tile')?.classList.remove('is-selected');
-    const pickerGroup = $('#photo-picker-group');
-    if (pickerGroup) pickerGroup.hidden = false;
+    const stepPhoto = $('#step-photo');
+    if (stepPhoto) stepPhoto.hidden = false;
+    const submitBtn = $('#setup-submit');
+    if (submitBtn) submitBtn.hidden = false;
   });
 });
 
-$('#daily-done-leaderboard')?.addEventListener('click', () => {
+$('#daily-done-leaderboard')?.addEventListener('click', (e) => {
+  e.stopPropagation();
   loadLeaderboard('daily');
   document.querySelector('.leaderboard-section')?.scrollIntoView({ behavior: 'smooth' });
 });

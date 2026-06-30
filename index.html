@@ -61,31 +61,42 @@
         </div>
 
         <form id="setup-form" class="setup-form">
-          <fieldset class="field-group">
-            <legend>Kies je spelvorm</legend>
-            <div class="size-options" id="size-options">
-              <div class="daily-size-tile" id="daily-size-tile" hidden>
-                <div class="daily-card-active" id="daily-card-active">
-                  <img id="daily-card-thumb" src="" alt="" hidden>
-                  <span id="daily-card-photo" hidden></span>
-                  Dagelijks
-                  <small id="daily-card-level"></small>
-                </div>
-                <div class="daily-card-done" id="daily-card-done" hidden>
-                  <span class="daily-done-check">✓</span>
-                  Dagelijks
-                  <small id="daily-done-summary"></small>
-                  <button type="button" id="daily-done-leaderboard" hidden></button>
-                </div>
+          <!-- Stap 1: Kies je spelvorm -->
+          <div class="setup-mode-cards">
+            <div class="mode-card" id="card-daily" tabindex="0" role="button" aria-pressed="false">
+              <div class="mode-card-header">
+                <strong class="mode-card-title">Dagelijkse Challenge</strong>
               </div>
+              <span class="mode-card-sub">Elke dag een nieuwe puzzel. Iedereen speelt dezelfde uitdaging. Klim in de ranglijst.</span>
+              <div class="mode-card-daily-info" id="daily-card-active" hidden>
+                <img id="daily-card-thumb" src="" alt="" class="mode-card-thumb">
+                <span id="daily-card-photo"></span> · <small id="daily-card-level"></small>
+              </div>
+              <div class="mode-card-daily-info mode-card-daily-done" id="daily-card-done" hidden>
+                <span class="daily-done-check">✓</span>
+                <span id="daily-done-summary"></span>
+                <button type="button" id="daily-done-leaderboard" hidden></button>
+              </div>
+            </div>
+
+            <div class="mode-card" id="card-levels" tabindex="0" role="button" aria-pressed="false">
+              <strong class="mode-card-title">Levels Uitdaging</strong>
+              <span class="mode-card-sub">Kies je niveau, speel alle puzzels vrij en verzamel badges en voortgang.</span>
+            </div>
+          </div>
+
+          <!-- Stap 2: Kies je niveau (alleen bij Levels) -->
+          <div class="setup-step" id="step-levels" hidden>
+            <div class="size-options" id="size-options">
               <label><input type="radio" name="size" value="3"><span class="size-label level-progress-block">Makkelijk<small>3 × 3</small><span class="size-progress" data-size="3"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
               <label><input type="radio" name="size" value="4"><span class="size-label level-progress-block">Gemiddeld<small>4 × 4</small><span class="size-progress" data-size="4"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
               <label><input type="radio" name="size" value="5"><span class="size-label level-progress-block">Moeilijk<small>5 × 5</small><span class="size-progress" data-size="5"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
               <label><input type="radio" name="size" value="6"><span class="size-label level-progress-block">Expert<small>6 × 6</small><span class="size-progress" data-size="6"></span><span class="level-complete-badge" title="Alle foto's op dit niveau voltooid"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></span></label>
             </div>
-          </fieldset>
+          </div>
 
-          <div class="field-group" id="photo-picker-group" hidden>
+          <!-- Stap 3: Kies je foto (verschijnt na niveaukeuze) -->
+          <div class="setup-step" id="step-photo" hidden>
             <span class="upload-label">Foto</span>
             <button type="button" id="open-gallery" class="photo-picker">
               <img id="photo-picker-preview" src="assets/gallery/papegaai.jpg" alt="">
@@ -107,7 +118,7 @@
             </div>
           </div>
 
-          <button class="button start-puzzle-button" type="submit">Start de puzzel <span>→</span></button>
+          <button class="button start-puzzle-button" id="setup-submit" type="submit" hidden>Start de puzzel <span>→</span></button>
         </form>
 
         <div id="player-bar" class="player-bar" hidden>
