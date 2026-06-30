@@ -225,7 +225,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 #card-daily.is-selected .daily-done-check{background:rgba(255,255,255,.25);color:#fff}
 /* Iconen bovenaan de moduskaarten */
 .mode-card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;flex:none;transition:background .18s}
-#card-daily .mode-card-icon{background:rgba(255,122,69,.12);color:var(--logo-orange)}
+#card-daily .mode-card-icon{background:rgba(23,61,204,.1);color:var(--blue)}
 #card-levels .mode-card-icon{background:rgba(23,61,204,.1);color:var(--blue)}
 .mode-card-icon svg{width:28px;height:28px}
 #card-daily.is-selected .mode-card-icon{background:rgba(255,255,255,.2);color:#fff}
