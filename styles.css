@@ -65,7 +65,8 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .field-group{border:0;padding:0;margin:0}
 .field-group legend,.upload-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:12px;padding:0;display:block;color:#6e6e73;font-weight:600}
 .size-options{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.size-options label{position:relative;cursor:pointer}
+.size-options label{position:relative;cursor:pointer;display:flex;flex-direction:column}
+.size-options .size-label{height:100%}
 .size-options input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0}
 .size-options .size-label{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);border-radius:var(--radius-md);padding:18px 6px;font:700 14px "Manrope";text-align:center;background:rgba(var(--surface-rgb),.5);transition:transform .18s,box-shadow .18s,border-color .18s}
 .level-complete-badge{display:none;position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#ffd60a,#ff9f0a);color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.25);align-items:center;justify-content:center}
@@ -205,27 +206,16 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .code-dialog p{line-height:1.6;color:#6e6e73}
 .result-dialog .button,.confirm-dialog .button{width:100%;margin-top:20px}
 /* --- Dagelijkse uitdaging --- */
-.daily-size-tile{position:relative;cursor:pointer}
-.daily-size-tile .daily-card-active,.daily-size-tile .daily-card-done{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-radius:var(--radius-md);padding:18px 6px;font:700 14px "Manrope";text-align:center;transition:transform .18s,box-shadow .18s,border-color .18s}
+.daily-size-tile{position:relative;cursor:pointer;display:flex;flex-direction:column}
+.daily-size-tile .daily-card-active,.daily-size-tile .daily-card-done{flex:1;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:var(--radius-md);padding:18px 6px;font:700 14px "Manrope";text-align:center;transition:transform .18s,box-shadow .18s,border-color .18s}
 .daily-size-tile .daily-card-active{border:1.5px solid rgba(255,122,69,.4);background:rgba(255,122,69,.07);color:var(--ink)}
-.daily-size-tile .daily-card-active:hover{transform:translateY(-1px);border-color:rgba(255,122,69,.7)}
-.daily-size-tile.is-selected .daily-card-active{border-color:transparent;background:linear-gradient(135deg,var(--logo-orange),var(--magenta));color:#fff;box-shadow:0 14px 30px rgba(255,122,69,.35);transform:translateY(-2px)}
-.daily-size-tile .daily-card-active small{font-weight:500;font-size:11px;color:rgba(255,122,69,.9)}
-.daily-size-tile.is-selected .daily-card-active small{color:rgba(255,255,255,.85)}
-.daily-tile-icon{width:22px;height:22px;stroke:var(--logo-orange);flex:none}
-.daily-size-tile.is-selected .daily-tile-icon{stroke:#fff}
-.daily-size-tile .daily-card-done{border:1.5px solid rgba(52,199,89,.3);background:rgba(52,199,89,.07)}
-.daily-done-check{width:22px;height:22px;border-radius:50%;background:rgba(52,199,89,.2);color:#15803d;display:flex;align-items:center;justify-content:center;font:700 12px "Manrope";flex:none}
-:root[data-theme="dark"] .daily-done-check{background:rgba(52,199,89,.25);color:#6fe893}
-.daily-card-done small{font-weight:500;font-size:11px;color:#86868b}
-.daily-done-details{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-.daily-done-details strong{font:700 14px "Manrope"}
-.daily-done-details span{font-size:12px;color:#86868b}
-.daily-done-check{width:36px;height:36px;border-radius:50%;background:rgba(52,199,89,.15);color:#15803d;display:flex;align-items:center;justify-content:center;font:700 17px "Manrope";flex:none}
-:root[data-theme="dark"] .daily-done-check{background:rgba(52,199,89,.22);color:#6fe893}
-.daily-done-details{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-.daily-done-details strong{font:700 14px "Manrope"}
-.daily-done-details span{font-size:12px;color:#86868b}
+.daily-size-tile .daily-card-done{border:1.5px solid rgba(255,122,69,.35);background:rgba(255,122,69,.05);color:var(--ink);cursor:pointer}
+.daily-size-tile .daily-card-active:hover,.daily-size-tile .daily-card-done:hover{transform:translateY(-1px);border-color:rgba(255,122,69,.7)}
+.daily-size-tile.is-selected .daily-card-active,.daily-size-tile.is-selected .daily-card-done{border-color:transparent;background:linear-gradient(135deg,var(--logo-orange),var(--magenta));color:#fff;box-shadow:0 14px 30px rgba(255,122,69,.35);transform:translateY(-2px)}
+.daily-size-tile .daily-card-active small,.daily-size-tile .daily-card-done small{font-weight:500;font-size:11px;color:rgba(255,122,69,.9)}
+.daily-size-tile.is-selected .daily-card-active small,.daily-size-tile.is-selected .daily-card-done small{color:rgba(255,255,255,.85)}
+.daily-done-check{width:20px;height:20px;border-radius:50%;background:rgba(255,122,69,.15);color:var(--logo-orange);display:inline-flex;align-items:center;justify-content:center;font:700 11px "Manrope";flex:none}
+.daily-size-tile.is-selected .daily-done-check{background:rgba(255,255,255,.25);color:#fff}
 .daily-badge{font:700 10px "Manrope";letter-spacing:.15em;text-transform:uppercase;color:var(--logo-orange);background:rgba(255,122,69,.1);border-radius:999px;padding:5px 14px;margin-bottom:10px;width:fit-content}
 .daily-leaderboard-tab{display:flex;align-items:center;gap:5px}
 .daily-tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--logo-orange);flex:none;animation:pulse-dot 2.4s ease-in-out infinite}

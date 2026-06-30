@@ -633,7 +633,10 @@ async function finishGame() {
     try {
       const dailyResult = await saveDailyScore(dailyDateKey(), entry);
       dailyRank = dailyResult.rank;
-      setDailyRecord(dailyDateKey(), { rank: dailyRank, time: Math.round(state.elapsed), moves: state.moves, stars: computeStars(state.moves, state.size) });
+      const prevRecord = getDailyRecord(dailyDateKey());
+      if (!prevRecord || Math.round(state.elapsed) < prevRecord.time) {
+        setDailyRecord(dailyDateKey(), { rank: dailyRank, time: Math.round(state.elapsed), moves: state.moves, stars: computeStars(state.moves, state.size) });
+      }
       renderDailyCard();
       loadLeaderboard('daily');
     } catch { /* silent — reguliere score is al opgeslagen */ }
@@ -1132,14 +1135,17 @@ document.querySelectorAll('.tab').forEach((tab) => {
   });
 });
 
-$('#daily-card-active')?.addEventListener('click', () => {
+function selectDailyTile() {
   const tile = $('#daily-size-tile');
   if (!tile || tile.hidden) return;
   tile.classList.add('is-selected');
   document.querySelectorAll('input[name=size]').forEach((r) => { r.checked = false; });
   const pickerGroup = $('#photo-picker-group');
   if (pickerGroup) pickerGroup.hidden = true;
-});
+}
+
+$('#daily-card-active')?.addEventListener('click', selectDailyTile);
+$('#daily-card-done')?.addEventListener('click', selectDailyTile);
 
 document.querySelectorAll('input[name=size]').forEach((radio) => {
   radio.addEventListener('change', () => {
