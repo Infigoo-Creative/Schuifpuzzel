@@ -54,7 +54,22 @@ function rankedView(array $sortedScores, ?string $highlightId): array {
     return ['ranking' => $top10, 'rank' => $rank, 'context' => $context];
 }
 
+function resolveDailyDate(): ?string {
+    $raw = preg_replace('/[^0-9-]/', '', (string)($_GET['daily'] ?? ''));
+    return (strlen($raw) === 10 && preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) ? $raw : null;
+}
+
+function dailyScoresFile(string $date): string {
+    return dataDir() . "/scores-daily-{$date}.json";
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $daily = resolveDailyDate();
+    if ($daily !== null) {
+        $view = rankedView(sortScores(readJsonFile(dailyScoresFile($daily))), null);
+        echo json_encode($view['ranking'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     $size = resolveSize();
     $view = rankedView(sortScores(readJsonFile(scoresFileFor($size))), null);
     echo json_encode($view['ranking'], JSON_UNESCAPED_UNICODE);
@@ -101,8 +116,9 @@ if (($input['action'] ?? '') === 'rename') {
     exit;
 }
 
+$daily = resolveDailyDate();
 $size = resolveSize();
-$scoresFile = scoresFileFor($size);
+$scoresFile = ($daily !== null) ? dailyScoresFile($daily) : scoresFileFor($size);
 
 $name = trim((string)($input['name'] ?? ''));
 $time = (int)($input['time'] ?? 0);

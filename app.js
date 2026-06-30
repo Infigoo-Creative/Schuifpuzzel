@@ -1,5 +1,5 @@
 import { neighbours, isSolved, shuffleWalk, solvedBoard, trySwap, formatTime, solveBoard } from './puzzle.js';
-import { fetchRanking, saveScore, renamePlayerScores } from './api-client.js';
+import { fetchRanking, saveScore, renamePlayerScores, fetchDailyRanking, saveDailyScore } from './api-client.js';
 import { containsBannedWord } from './moderation.js';
 import { pickFinishLine } from './finish-lines.js';
 import {
@@ -10,9 +10,26 @@ import {
 
 const SIZES = [3, 4, 5, 6];
 
-// Drempelwaarden voor de ster-efficiëntiebeoordeling per bordgrootte: [3-sterren, 2-sterren].
-// Gebaseerd op wat een goed menselijk tempo oplevert — niet de theoretische minimum.
-const EFFICIENCY_THRESHOLDS = { 3: [22, 38], 4: [50, 85], 5: [100, 160], 6: [160, 260] };
+// Drempelwaarden voor 5-sterren efficiëntiebeoordeling: [5★, 4★, 3★, 2★] per bordgrootte.
+// Mild ingesteld: een paar extra zetten mag je nog steeds 5 sterren opleveren.
+const EFFICIENCY_THRESHOLDS = { 3: [28, 42, 60, 85], 4: [55, 80, 120, 170], 5: [110, 165, 240, 340], 6: [180, 270, 390, 550] };
+
+// Vaste rotatie van 36 dagelijkse puzzels: elke foto op elk niveau precies één keer per cyclus.
+// Grootte en foto wisselen elke dag zodat de uitdaging gevarieerd blijft.
+const DAILY_SEQUENCE = [
+  {photo:'papegaai',size:4},{photo:'molen',size:3},{photo:'luchtballon',size:5},
+  {photo:'zonnebloem',size:4},{photo:'dolfijn',size:6},{photo:'vuurtoren',size:3},
+  {photo:'strand',size:5},{photo:'auto',size:6},{photo:'raket',size:3},
+  {photo:'molen',size:4},{photo:'papegaai',size:6},{photo:'luchtballon',size:3},
+  {photo:'zonnebloem',size:5},{photo:'dolfijn',size:4},{photo:'vuurtoren',size:6},
+  {photo:'strand',size:3},{photo:'auto',size:4},{photo:'raket',size:6},
+  {photo:'papegaai',size:3},{photo:'molen',size:5},{photo:'luchtballon',size:6},
+  {photo:'zonnebloem',size:3},{photo:'dolfijn',size:5},{photo:'vuurtoren',size:4},
+  {photo:'strand',size:6},{photo:'auto',size:3},{photo:'raket',size:4},
+  {photo:'papegaai',size:5},{photo:'molen',size:6},{photo:'luchtballon',size:4},
+  {photo:'zonnebloem',size:6},{photo:'dolfijn',size:3},{photo:'vuurtoren',size:5},
+  {photo:'strand',size:4},{photo:'auto',size:5},{photo:'raket',size:5},
+];
 
 // --- Tijdelijk testgereedschap: zet op false om de Autosolve-knop helemaal te verbergen. ---
 const ENABLE_AUTOSOLVE = true;
@@ -105,6 +122,7 @@ const state = {
   activeLeaderboardSize: 3,
   startAfterPick: false,
   shuffleToken: 0,
+  isDailyChallenge: false,
 };
 
 function emptyValue(size) {
@@ -413,6 +431,9 @@ function stopGame() {
   coverPickPhotoButton.hidden = true;
   coverPlayAgainButton.hidden = true;
   coverStartButton.hidden = false;
+  state.isDailyChallenge = false;
+  const dailyBadge = $('#daily-badge');
+  if (dailyBadge) dailyBadge.hidden = true;
   showToast('Poging gestopt — deze tijd telt niet mee.');
 }
 
@@ -456,6 +477,60 @@ function findNextChallenge() {
   return null;
 }
 
+// --- Dagelijkse uitdaging helpers ---
+
+function dailyDateKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatDailyDate() {
+  return new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }).toUpperCase();
+}
+
+function getDailyRecord(date) {
+  try { return JSON.parse(localStorage.getItem(`schuifpuzzel-daily-${date}`)); } catch { return null; }
+}
+
+function setDailyRecord(date, data) {
+  localStorage.setItem(`schuifpuzzel-daily-${date}`, JSON.stringify(data));
+}
+
+function getDailyCombo() {
+  const dayIndex = Math.floor(Date.now() / 86400000) % DAILY_SEQUENCE.length;
+  return DAILY_SEQUENCE[dayIndex];
+}
+
+const SIZE_LABELS = { 3: 'Makkelijk · 3 × 3', 4: 'Gemiddeld · 4 × 4', 5: 'Moeilijk · 5 × 5', 6: 'Expert · 6 × 6' };
+
+function renderDailyCard() {
+  const card = $('#daily-card');
+  if (!card) return;
+  const player = getPlayer();
+  card.hidden = !player;
+  if (!player) return;
+
+  const combo = getDailyCombo();
+  const gallery = GALLERY.find((g) => g.id === combo.photo);
+  const record = getDailyRecord(dailyDateKey());
+  const done = !!record;
+
+  $('#daily-card-thumb').src = gallery?.src ?? '';
+  $('#daily-card-thumb').alt = gallery?.name ?? '';
+  $('#daily-card-photo').textContent = gallery?.name ?? '';
+  $('#daily-card-level').textContent = `${SIZE_LABELS[combo.size]} · ${new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}`;
+
+  $('#daily-card-active').hidden = done;
+  $('#daily-card-done').hidden = !done;
+
+  if (done) {
+    const stars = '★'.repeat(record.stars ?? 0) + '☆'.repeat(5 - (record.stars ?? 0));
+    const rankText = record.rank ? `Plek ${record.rank}` : 'Score opgeslagen';
+    $('#daily-done-summary').textContent = `${rankText} · ${formatTime(record.time)} · ${stars}`;
+  }
+}
+
+// --- Einde dagelijkse helpers ---
+
 function starSVG(filled) {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
@@ -474,23 +549,26 @@ function starSVG(filled) {
   return svg;
 }
 
+function computeStars(moves, size) {
+  const [t5, t4, t3, t2] = EFFICIENCY_THRESHOLDS[size] ?? [55, 80, 120, 170];
+  return moves <= t5 ? 5 : moves <= t4 ? 4 : moves <= t3 ? 3 : moves <= t2 ? 2 : 1;
+}
+
 function showEfficiency(moves, size) {
-  const [t3, t2] = EFFICIENCY_THRESHOLDS[size] ?? [50, 100];
-  const stars = moves <= t3 ? 3 : moves <= t2 ? 2 : 1;
-  const verdicts = ['Je kunt nog efficiënter', 'Goed gespeeld', 'Razend efficiënt'];
-  const classes = ['', 'is-good', 'is-great'];
+  const stars = computeStars(moves, size);
+  const verdicts = ['Hier is nog veel winst te behalen', 'Je kunt er nog een schepje bovenop', 'Goed gespeeld', 'Heel goed gespeeld', 'Razend efficiënt'];
+  const classes = ['', '', '', 'is-good', 'is-great'];
 
   $('#result-efficiency-count').textContent = moves;
-
   const verdictEl = $('#result-efficiency-verdict');
   verdictEl.textContent = verdicts[stars - 1];
   verdictEl.className = `result-efficiency-verdict ${classes[stars - 1]}`.trim();
 
   const starsEl = $('#result-efficiency-stars');
   starsEl.innerHTML = '';
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     const svg = starSVG(i < stars);
-    svg.style.animationDelay = `${0.14 + i * 0.1}s`;
+    svg.style.animationDelay = `${0.12 + i * 0.08}s`;
     starsEl.appendChild(svg);
   }
   $('#result-efficiency').hidden = false;
@@ -543,6 +621,22 @@ async function finishGame() {
   if (state.activeLeaderboardSize === state.size) renderLeaderboard(ranking, rank > 10 ? context : []);
   recordPlay({ size: state.size, rank });
 
+  // Daily challenge afhandelen: extra opslaan in dagranglijst, badge verbergen, kaart updaten.
+  const isDaily = state.isDailyChallenge;
+  state.isDailyChallenge = false;
+  const dailyBadgeEl = $('#daily-badge');
+  if (dailyBadgeEl) dailyBadgeEl.hidden = true;
+  let dailyRank = null;
+  if (isDaily) {
+    try {
+      const dailyResult = await saveDailyScore(dailyDateKey(), entry);
+      dailyRank = dailyResult.rank;
+      setDailyRecord(dailyDateKey(), { rank: dailyRank, time: Math.round(state.elapsed), moves: state.moves, stars: computeStars(state.moves, state.size) });
+      renderDailyCard();
+      loadLeaderboard('daily');
+    } catch { /* silent — reguliere score is al opgeslagen */ }
+  }
+
   await markCompleted(state.size, state.imageId);
   renderProgress();
   const justCompletedAll = totalBefore < TOTAL_LEVELS && totalCompleted() === TOTAL_LEVELS;
@@ -578,9 +672,16 @@ async function finishGame() {
   else if (diff > 0) finishCategory = 'personalRecord';
   else finishCategory = 'normal';
 
-  $('#result-eyebrow-text').textContent = rank > 0 && rank <= 10
-    ? `PUZZEL VOLTOOID · PLEK ${rank}`
-    : 'PUZZEL VOLTOOID';
+  if (isDaily) {
+    const displayRank = dailyRank ?? rank;
+    $('#result-eyebrow-text').textContent = displayRank > 0 && displayRank <= 10
+      ? `DAGELIJKSE UITDAGING · ${formatDailyDate()} · PLEK ${displayRank}`
+      : `DAGELIJKSE UITDAGING · ${formatDailyDate()}`;
+  } else {
+    $('#result-eyebrow-text').textContent = rank > 0 && rank <= 10
+      ? `PUZZEL VOLTOOID · PLEK ${rank}`
+      : 'PUZZEL VOLTOOID';
+  }
   $('#result-title').textContent = pickFinishLine(finishCategory);
   let message = rank > 0 && rank <= 10 ? 'Je staat nu in de top 10 van dit niveau.' : '';
   if (!wasAlreadyCompleted) message += ' Dit level heb je nu voor het eerst uitgespeeld — badge verdiend!';
@@ -662,8 +763,14 @@ function renderLeaderboard(entries, context = []) {
 
 async function loadLeaderboard(size) {
   state.activeLeaderboardSize = size;
-  document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('is-active', Number(tab.dataset.size) === size));
-  renderLeaderboard(await fetchRanking(size));
+  document.querySelectorAll('.tab').forEach((tab) => {
+    const tabVal = tab.dataset.size === 'daily' ? 'daily' : Number(tab.dataset.size);
+    tab.classList.toggle('is-active', tabVal === size);
+  });
+  const entries = size === 'daily'
+    ? await fetchDailyRanking(dailyDateKey())
+    : await fetchRanking(size);
+  renderLeaderboard(entries);
 }
 
 let toastTimeout = null;
@@ -826,6 +933,7 @@ function renderProfileStats() {
 function proceedToGame(name) {
   state.player = { name, code: getPlayer()?.code ?? null };
   updateProfileUI(name);
+  renderDailyCard();
   updateCoverPreview();
   setupForm.hidden = true;
   playerBar.hidden = false;
@@ -983,7 +1091,27 @@ coverPickPhotoButton.addEventListener('click', openPhotoPicker);
 $('#view-ranking').addEventListener('click', () => { dialog.close(); $('.leaderboard-section').scrollIntoView(); });
 
 document.querySelectorAll('.tab').forEach((tab) => {
-  tab.addEventListener('click', () => loadLeaderboard(Number(tab.dataset.size)));
+  tab.addEventListener('click', () => {
+    const val = tab.dataset.size === 'daily' ? 'daily' : Number(tab.dataset.size);
+    loadLeaderboard(val);
+  });
+});
+
+$('#daily-start-button')?.addEventListener('click', () => {
+  if (!state.player) return;
+  const combo = getDailyCombo();
+  const radio = document.querySelector(`input[name=size][value="${combo.size}"]`);
+  if (radio) radio.checked = true;
+  selectImage(combo.photo);
+  state.isDailyChallenge = true;
+  const dailyBadgeEl = $('#daily-badge');
+  if (dailyBadgeEl) dailyBadgeEl.hidden = false;
+  if (state.playing) confirmStopIfPlaying(startGame); else startGame();
+});
+
+$('#daily-done-leaderboard')?.addEventListener('click', () => {
+  loadLeaderboard('daily');
+  document.querySelector('.leaderboard-section')?.scrollIntoView({ behavior: 'smooth' });
 });
 
 openGalleryButton.addEventListener('click', () => {
@@ -1096,6 +1224,7 @@ syncFromServer().then(() => {
   renderGallery();
 });
 renderProgress();
+renderDailyCard();
 
 // Subtiel, automatisch bijgehouden versiestempel (zie .git/hooks/pre-commit) —
 // handig om te checken of de live server de laatste upload draait.

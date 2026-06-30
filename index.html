@@ -60,6 +60,28 @@
           <span id="progress-text">0 van 36 levels voltooid</span>
         </div>
 
+        <div class="daily-card" id="daily-card" hidden>
+          <div class="daily-card-active" id="daily-card-active">
+            <p class="daily-card-label">PUZZEL VAN DE DAG</p>
+            <div class="daily-card-content">
+              <img class="daily-card-thumb" id="daily-card-thumb" src="" alt="">
+              <div class="daily-card-info">
+                <strong id="daily-card-photo"></strong>
+                <span id="daily-card-level"></span>
+              </div>
+              <button class="button" id="daily-start-button" type="button">Start <span>→</span></button>
+            </div>
+          </div>
+          <div class="daily-card-done" id="daily-card-done" hidden>
+            <div class="daily-done-check">✓</div>
+            <div class="daily-done-details">
+              <strong>Vandaag gedaan</strong>
+              <span id="daily-done-summary"></span>
+            </div>
+            <button type="button" class="text-button" id="daily-done-leaderboard">Dagranglijst →</button>
+          </div>
+        </div>
+
         <form id="setup-form" class="setup-form">
           <fieldset class="field-group">
             <legend>Moeilijkheidsgraad</legend>
@@ -105,6 +127,7 @@
       </div>
 
       <div class="game-column">
+        <div class="daily-badge" id="daily-badge" hidden>DAGELIJKSE UITDAGING</div>
         <div class="game-topbar">
           <div class="stat"><span>TIJD</span><strong id="timer">00:00.0</strong><b id="timer-multiplier" class="timer-multiplier" hidden>×2</b></div>
           <div class="stat stat-center"><span>NIVEAU</span><strong id="level-label">3 × 3</strong></div>
@@ -142,6 +165,7 @@
       <div class="leaderboard-heading">
         <div><p class="eyebrow"><span></span> TILES OF FAME</p><h2>De snelste<br>schuivers.</h2></div>
         <div class="leaderboard-tabs" id="leaderboard-tabs">
+          <button type="button" class="tab daily-leaderboard-tab" data-size="daily"><span class="daily-tab-dot"></span>Vandaag</button>
           <button type="button" class="tab is-active" data-size="3">3 × 3</button>
           <button type="button" class="tab" data-size="4">4 × 4</button>
           <button type="button" class="tab" data-size="5">5 × 5</button>

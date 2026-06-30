@@ -81,6 +81,36 @@ export async function renamePlayerScores(code, name) {
   }
 }
 
+export async function fetchDailyRanking(date) {
+  try {
+    const response = await fetch(`${API_URL}?daily=${date}`, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error('API niet beschikbaar');
+    return await response.json();
+  } catch {
+    return JSON.parse(localStorage.getItem(`schuifpuzzel-daily-ranking-${date}`) || '[]');
+  }
+}
+
+export async function saveDailyScore(date, entry) {
+  const localKey = `schuifpuzzel-daily-ranking-${date}`;
+  try {
+    const response = await fetch(`${API_URL}?daily=${date}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(entry),
+    });
+    if (!response.ok) throw new Error('API niet beschikbaar');
+    const data = await response.json();
+    return { ...data, persisted: true };
+  } catch {
+    const local = JSON.parse(localStorage.getItem(localKey) || '[]');
+    local.push({ id: entry.id, name: entry.name, time: entry.time, moves: entry.moves, image: entry.image, date: new Date().toISOString() });
+    local.sort((a, b) => a.time - b.time || a.moves - b.moves);
+    localStorage.setItem(localKey, JSON.stringify(local.slice(0, LOCAL_CAP)));
+    return { ...rankedView(local, entry.id), persisted: false };
+  }
+}
+
 export async function saveScore(size, entry) {
   let response;
   try {

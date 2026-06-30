@@ -204,13 +204,35 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .code-display{font:700 44px "Manrope";letter-spacing:.15em;text-align:center;padding:22px 0;margin:8px 0;border-radius:var(--radius-md);background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff}
 .code-dialog p{line-height:1.6;color:#6e6e73}
 .result-dialog .button,.confirm-dialog .button{width:100%;margin-top:20px}
+/* --- Dagelijkse uitdaging --- */
+.daily-card{background:rgba(255,122,69,.07);border:1px solid rgba(255,122,69,.22);border-radius:var(--radius-md);padding:16px 18px;margin:20px 0 24px}
+.daily-card-label{font:700 10px "Manrope";letter-spacing:.15em;text-transform:uppercase;color:var(--logo-orange);margin:0 0 12px}
+.daily-card-content{display:flex;align-items:center;gap:12px}
+.daily-card-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;flex:none}
+.daily-card-info{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}
+.daily-card-info strong{font:700 15px "Manrope";white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.daily-card-info span{font-size:12px;color:#86868b}
+.daily-card-content .button{flex:none;padding:10px 16px;font-size:13px;background:var(--logo-orange);border-color:var(--logo-orange)}
+.daily-card-content .button:hover{background:color-mix(in srgb,var(--logo-orange),#000 12%)}
+.daily-card-done{display:flex;align-items:center;gap:12px}
+.daily-done-check{width:36px;height:36px;border-radius:50%;background:rgba(52,199,89,.15);color:#15803d;display:flex;align-items:center;justify-content:center;font:700 17px "Manrope";flex:none}
+:root[data-theme="dark"] .daily-done-check{background:rgba(52,199,89,.22);color:#6fe893}
+.daily-done-details{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.daily-done-details strong{font:700 14px "Manrope"}
+.daily-done-details span{font-size:12px;color:#86868b}
+.daily-badge{font:700 10px "Manrope";letter-spacing:.15em;text-transform:uppercase;color:var(--logo-orange);background:rgba(255,122,69,.1);border-radius:999px;padding:5px 14px;margin-bottom:10px;width:fit-content}
+.daily-leaderboard-tab{display:flex;align-items:center;gap:5px}
+.daily-tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--logo-orange);flex:none;animation:pulse-dot 2.4s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.35}}
+/* --- Einde dagelijkse uitdaging --- */
+
 .result-efficiency{display:flex;align-items:center;gap:20px;background:rgba(var(--ink-rgb),.04);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0 4px}
 .result-efficiency-moves{display:flex;flex-direction:column;gap:3px;min-width:52px}
 .result-efficiency-label{font:600 10px "Manrope";letter-spacing:.15em;text-transform:uppercase;color:#86868b}
 .result-efficiency-moves strong{font:700 28px "Manrope";font-variant-numeric:tabular-nums}
 .result-efficiency-rating{display:flex;flex-direction:column;gap:6px}
 .result-efficiency-stars{display:flex;gap:4px}
-.result-efficiency-stars svg{width:22px;height:22px}
+.result-efficiency-stars svg{width:18px;height:18px}
 .result-efficiency-verdict{font:600 13px "Manrope"}
 .result-efficiency-verdict.is-good{color:var(--blue)}
 .result-efficiency-verdict.is-great{color:#15803d}
