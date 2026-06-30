@@ -204,6 +204,19 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .code-display{font:700 44px "Manrope";letter-spacing:.15em;text-align:center;padding:22px 0;margin:8px 0;border-radius:var(--radius-md);background:linear-gradient(120deg,var(--blue),var(--violet));color:#fff}
 .code-dialog p{line-height:1.6;color:#6e6e73}
 .result-dialog .button,.confirm-dialog .button{width:100%;margin-top:20px}
+.result-efficiency{display:flex;align-items:center;gap:20px;background:rgba(var(--ink-rgb),.04);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0 4px}
+.result-efficiency-moves{display:flex;flex-direction:column;gap:3px;min-width:52px}
+.result-efficiency-label{font:600 10px "Manrope";letter-spacing:.15em;text-transform:uppercase;color:#86868b}
+.result-efficiency-moves strong{font:700 28px "Manrope";font-variant-numeric:tabular-nums}
+.result-efficiency-rating{display:flex;flex-direction:column;gap:6px}
+.result-efficiency-stars{display:flex;gap:4px}
+.result-efficiency-stars svg{width:22px;height:22px}
+.result-efficiency-verdict{font:600 13px "Manrope"}
+.result-efficiency-verdict.is-good{color:var(--blue)}
+.result-efficiency-verdict.is-great{color:#15803d}
+:root[data-theme="dark"] .result-efficiency-verdict.is-great{color:#6fe893}
+@keyframes star-pop{0%{transform:scale(0) rotate(-20deg);opacity:0}65%{transform:scale(1.25) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+.result-efficiency-stars svg{animation:star-pop .35s cubic-bezier(.34,1.56,.64,1) backwards}
 .result-secondary-actions{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:16px;gap:8px 12px}
 .result-secondary-actions .text-button{font-size:11px}
 .dialog-close{position:absolute;right:18px;top:16px;border:0;background:rgba(var(--ink-rgb),.06);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;line-height:1}

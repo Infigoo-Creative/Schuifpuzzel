@@ -10,6 +10,10 @@ import {
 
 const SIZES = [3, 4, 5, 6];
 
+// Drempelwaarden voor de ster-efficiëntiebeoordeling per bordgrootte: [3-sterren, 2-sterren].
+// Gebaseerd op wat een goed menselijk tempo oplevert — niet de theoretische minimum.
+const EFFICIENCY_THRESHOLDS = { 3: [22, 38], 4: [50, 85], 5: [100, 160], 6: [160, 260] };
+
 // --- Tijdelijk testgereedschap: zet op false om de Autosolve-knop helemaal te verbergen. ---
 const ENABLE_AUTOSOLVE = true;
 const AUTOSOLVE_MIN_DELAY = 60;
@@ -452,6 +456,46 @@ function findNextChallenge() {
   return null;
 }
 
+function starSVG(filled) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  const pts = Array.from({ length: 10 }, (_, i) => {
+    const r = i % 2 === 0 ? 10 : 4;
+    const a = (i * 36 - 90) * Math.PI / 180;
+    return `${(12 + r * Math.cos(a)).toFixed(2)},${(12 + r * Math.sin(a)).toFixed(2)}`;
+  }).join(' ');
+  const poly = document.createElementNS(ns, 'polygon');
+  poly.setAttribute('points', pts);
+  poly.setAttribute('fill', filled ? '#f0b429' : 'currentColor');
+  if (!filled) poly.setAttribute('opacity', '0.18');
+  svg.appendChild(poly);
+  return svg;
+}
+
+function showEfficiency(moves, size) {
+  const [t3, t2] = EFFICIENCY_THRESHOLDS[size] ?? [50, 100];
+  const stars = moves <= t3 ? 3 : moves <= t2 ? 2 : 1;
+  const verdicts = ['Je kunt nog efficiënter', 'Goed gespeeld', 'Razend efficiënt'];
+  const classes = ['', 'is-good', 'is-great'];
+
+  $('#result-efficiency-count').textContent = moves;
+
+  const verdictEl = $('#result-efficiency-verdict');
+  verdictEl.textContent = verdicts[stars - 1];
+  verdictEl.className = `result-efficiency-verdict ${classes[stars - 1]}`.trim();
+
+  const starsEl = $('#result-efficiency-stars');
+  starsEl.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const svg = starSVG(i < stars);
+    svg.style.animationDelay = `${0.14 + i * 0.1}s`;
+    starsEl.appendChild(svg);
+  }
+  $('#result-efficiency').hidden = false;
+}
+
 async function finishGame() {
   state.playing = false;
   cancelAnimationFrame(state.timerFrame);
@@ -504,6 +548,7 @@ async function finishGame() {
   const justCompletedAll = totalBefore < TOTAL_LEVELS && totalCompleted() === TOTAL_LEVELS;
 
   $('#final-time').textContent = formatTime(state.elapsed);
+  showEfficiency(state.moves, state.size);
 
   const diff = previousTime == null ? null : previousTime - Math.round(state.elapsed);
   const deltaEl = $('#time-delta');
@@ -537,9 +582,7 @@ async function finishGame() {
     ? `PUZZEL VOLTOOID · PLEK ${rank}`
     : 'PUZZEL VOLTOOID';
   $('#result-title').textContent = pickFinishLine(finishCategory);
-  let message = rank > 0 && rank <= 10
-    ? `Met ${state.moves} zetten sta je nu in de top 10 van dit niveau.`
-    : `Voltooid in ${state.moves} zetten.`;
+  let message = rank > 0 && rank <= 10 ? 'Je staat nu in de top 10 van dit niveau.' : '';
   if (!wasAlreadyCompleted) message += ' Dit level heb je nu voor het eerst uitgespeeld — badge verdiend!';
 
   // Dezelfde vervolgactie (en dezelfde knoppen-tekst) geldt zowel in de pop-up als op de
