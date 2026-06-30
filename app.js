@@ -87,9 +87,7 @@ const galleryGrid = $('#gallery-grid');
 const openGalleryButton = $('#open-gallery');
 const photoPickerPreview = $('#photo-picker-preview');
 const photoPickerName = $('#photo-picker-name');
-const haveCodeLink = $('#have-code-link');
-const codeField = $('#code-field');
-const playerCodeInput = $('#player-code');
+const onboardingDialog = $('#onboarding-dialog');
 const codeDialog = $('#code-dialog');
 const codeDisplay = $('#code-display');
 const profileButton = $('#profile-button');
@@ -891,19 +889,9 @@ setupForm.addEventListener('change', (event) => {
   }
 });
 
-haveCodeLink.addEventListener('click', () => {
-  codeField.hidden = !codeField.hidden;
-  haveCodeLink.textContent = codeField.hidden ? 'Heb je al een code?' : 'Ik speel zonder code';
-  if (!codeField.hidden) playerCodeInput.focus();
-});
 
-// Zodra er een speler bekend is (eigen code), draait naam/ID-beheer voortaan via de
-// profielknop rechtsboven — het naamveld in de puzzelinstellingen is dan niet meer nodig.
-function updateSetupFormForExistingPlayer() {
-  const hasPlayer = !!getPlayer();
-  $('#name-field').hidden = hasPlayer;
-  $('.code-recovery').hidden = hasPlayer;
-}
+// Lege stub — naam/code-velden zijn verplaatst naar de onboarding-dialoog.
+function updateSetupFormForExistingPlayer() {}
 
 // Houdt de profielknop + profielpopup in sync met de huidige speler (naam/ID). Wordt
 // aangeroepen na registratie, na het starten van een puzzel en na een naamwijziging.
@@ -974,14 +962,8 @@ function proceedToGame(name) {
   }
 }
 
-setupForm.addEventListener('submit', async (event) => {
+setupForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  if (!setupForm.reportValidity()) return;
-  const name = $('#name').value.trim();
-  if (containsBannedWord(name)) {
-    showToast('Kies een andere naam — dit woord is niet toegestaan.');
-    return;
-  }
   const isDailySelected = $('#card-daily')?.classList.contains('is-selected');
   const isLevelsSelected = $('#card-levels')?.classList.contains('is-selected');
   if (!isDailySelected && !isLevelsSelected) {
@@ -1002,54 +984,31 @@ setupForm.addEventListener('submit', async (event) => {
     state.size = Number(pickedSize);
     state.isDailyChallenge = false;
   }
-
-  const enteredCode = playerCodeInput.value.trim();
-  const existingPlayer = getPlayer();
-
-  if (existingPlayer) {
-    // Dit apparaat heeft al een code: gewoon doorspelen, voortgang is al lokaal bekend.
-    // Is de naam gewijzigd, dan werken we ook alle eerder behaalde scores van deze code bij,
-    // zodat oude én nieuwe scores overal dezelfde (huidige) naam tonen.
-    if (name !== existingPlayer.name) {
-      updatePlayerName(name);
-      renamePlayerScores(existingPlayer.code, name);
-    }
-    proceedToGame(name);
-    return;
+  const player = getPlayer();
+  if (player) {
+    proceedToGame(player.name);
   }
+});
 
-  if (enteredCode) {
-    if (!/^\d{6}$/.test(enteredCode)) {
-      showToast('Een code bestaat uit 6 cijfers.');
-      return;
-    }
-    const recovered = await recoverByCode(enteredCode);
-    if (!recovered) {
-      showToast('Code niet gevonden — controleer je code.');
-      return;
-    }
+function handleCodeDialogClose() {
+  const name = codeDialog.dataset.pendingName;
+  const fromOnboarding = codeDialog.dataset.fromOnboarding === 'true';
+  delete codeDialog.dataset.fromOnboarding;
+  codeDialog.close();
+  if (!name) return;
+  if (fromOnboarding) {
+    // Speler net geregistreerd via onboarding: toon spelkeuze, start nog geen spel
+    state.player = { name, code: getPlayer()?.code ?? null };
+    updateProfileUI(name);
+    renderDailyCard();
     renderProgress();
+    coverSubtitle.textContent = 'Kies je spelvorm en begin te schuiven';
+  } else {
     proceedToGame(name);
-    return;
   }
-
-  // Eerste keer op dit apparaat, geen code ingevuld: nieuwe code aanmaken en eenmalig tonen.
-  const { code } = await registerPlayer(name);
-  codeDisplay.textContent = code;
-  codeDialog.showModal();
-  codeDialog.dataset.pendingName = name;
-});
-
-$('#confirm-code').addEventListener('click', () => {
-  const name = codeDialog.dataset.pendingName;
-  codeDialog.close();
-  if (name) proceedToGame(name);
-});
-$('#close-code-dialog').addEventListener('click', () => {
-  const name = codeDialog.dataset.pendingName;
-  codeDialog.close();
-  if (name) proceedToGame(name);
-});
+}
+$('#confirm-code').addEventListener('click', handleCodeDialogClose);
+$('#close-code-dialog').addEventListener('click', handleCodeDialogClose);
 
 // Het profiel is alleen voor speler-identiteit (naam/ID) en statistieken — de puzzel zelf
 // loopt door zolang de popup open staat, maar de klok pauzeert wel zolang je 'm bekijkt.
@@ -1075,7 +1034,6 @@ $('#profile-name-save').addEventListener('click', () => {
   updatePlayerName(name);
   renamePlayerScores(player.code, name);
   state.player = { ...state.player, name };
-  $('#name').value = name;
   profileButtonName.textContent = name;
   showToast('Naam bijgewerkt.');
   // De net getoonde ranglijst kan de oude naam nog vasthouden — direct verversen zodat
@@ -1093,7 +1051,7 @@ function openSettings() {
   coverNextChallengeButton.hidden = true;
   coverPickPhotoButton.hidden = true;
   coverTitle.innerHTML = 'Kies je niveau<br>en begin te schuiven.';
-  coverSubtitle.textContent = getPlayer() ? 'Kies niveau en foto, en start opnieuw' : 'Vul je naam in om te beginnen';
+  coverSubtitle.textContent = 'Kies je spelvorm om opnieuw te starten';
   frame.className = 'puzzle-frame is-locked';
   // Herstel de wizardstatus op basis van de vorige spelvorm
   if (state.isDailyChallenge) {
@@ -1306,11 +1264,12 @@ loadLeaderboard(state.size);
 
 const existingPlayer = getPlayer();
 if (existingPlayer) {
-  $('#name').value = existingPlayer.name;
   state.player = { name: existingPlayer.name, code: existingPlayer.code };
   updateProfileUI(existingPlayer.name);
+  coverSubtitle.textContent = 'Kies je spelvorm en begin te schuiven';
 } else {
-  updateSetupFormForExistingPlayer();
+  // Eerste bezoek: toon onboarding
+  onboardingDialog?.showModal();
 }
 syncFromServer().then(() => {
   renderProgress();
@@ -1318,6 +1277,63 @@ syncFromServer().then(() => {
 });
 renderProgress();
 renderDailyCard();
+
+// --- Onboarding-dialoog ---
+if (onboardingDialog) {
+  // Escape mag de onboarding niet sluiten — naam is verplicht
+  onboardingDialog.addEventListener('cancel', (e) => e.preventDefault());
+
+  const onboardingForm = $('#onboarding-form');
+  onboardingForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#onboarding-name').value.trim();
+    if (!name) return;
+    if (containsBannedWord(name)) {
+      showToast('Kies een andere naam — dit woord is niet toegestaan.');
+      return;
+    }
+    const { code } = await registerPlayer(name);
+    onboardingDialog.close();
+    state.player = { name, code };
+    updateProfileUI(name);
+    renderProgress();
+    renderDailyCard();
+    codeDisplay.textContent = code;
+    codeDialog.dataset.pendingName = name;
+    codeDialog.dataset.fromOnboarding = 'true';
+    codeDialog.showModal();
+  });
+
+  $('#onboarding-have-code')?.addEventListener('click', () => {
+    $('#onboarding-code-section').hidden = false;
+    $('#onboarding-have-code').hidden = true;
+  });
+
+  $('#onboarding-recover-btn')?.addEventListener('click', async () => {
+    const code = $('#onboarding-code').value.trim();
+    if (!/^\d{6}$/.test(code)) {
+      showToast('Een code bestaat uit 6 cijfers.');
+      return;
+    }
+    const recovered = await recoverByCode(code);
+    if (!recovered) {
+      showToast('Code niet gevonden — controleer je code.');
+      return;
+    }
+    onboardingDialog.close();
+    state.player = { name: recovered.name, code: recovered.code };
+    updateProfileUI(recovered.name);
+    renderProgress();
+    renderDailyCard();
+  });
+}
+
+// --- Profiel: code kopiëren ---
+$('#profile-copy-code')?.addEventListener('click', () => {
+  const code = profileIdValue?.textContent ?? '';
+  if (!code || code === '–') return;
+  navigator.clipboard?.writeText(code).then(() => showToast('Code gekopieerd.'));
+});
 
 // Subtiel, automatisch bijgehouden versiestempel (zie .git/hooks/pre-commit) —
 // handig om te checken of de live server de laatste upload draait.

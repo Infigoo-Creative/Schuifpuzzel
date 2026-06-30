@@ -223,6 +223,13 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .mode-card-daily-done{flex-wrap:wrap}
 .daily-done-check{width:20px;height:20px;border-radius:50%;background:rgba(255,122,69,.15);color:var(--logo-orange);display:inline-flex;align-items:center;justify-content:center;font:700 11px "Manrope";flex:none}
 #card-daily.is-selected .daily-done-check{background:rgba(255,255,255,.25);color:#fff}
+/* Iconen bovenaan de moduskaarten */
+.mode-card-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;flex:none;transition:background .18s}
+#card-daily .mode-card-icon{background:rgba(255,122,69,.12);color:var(--logo-orange)}
+#card-levels .mode-card-icon{background:rgba(23,61,204,.1);color:var(--blue)}
+.mode-card-icon svg{width:28px;height:28px}
+#card-daily.is-selected .mode-card-icon{background:rgba(255,255,255,.2);color:#fff}
+#card-levels.is-selected .mode-card-icon{background:rgba(255,255,255,.2);color:#fff}
 /* Stap-containers: verschijnen met een zachte expand-animatie */
 .setup-step{margin-top:4px;animation:step-fade-in .24s ease both}
 @keyframes step-fade-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
@@ -231,6 +238,18 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .daily-tab-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--logo-orange);flex:none;animation:pulse-dot 2.4s ease-in-out infinite}
 @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.35}}
 /* --- Einde dagelijkse uitdaging --- */
+
+/* --- Onboarding --- */
+.onboarding-dialog{width:min(480px,calc(100% - 36px));border:0;padding:46px;background:var(--glass-bg);backdrop-filter:blur(24px) saturate(180%);color:var(--ink);box-shadow:0 40px 100px rgba(0,0,0,.3);border-radius:var(--radius-lg)}
+.onboarding-dialog::backdrop{background:rgba(14,14,15,.62);backdrop-filter:blur(8px)}
+.onboarding-icon{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--logo-orange),var(--magenta));display:flex;align-items:center;justify-content:center;margin-bottom:24px;color:#fff;box-shadow:0 12px 30px rgba(255,122,69,.35)}
+.onboarding-icon svg{width:38px;height:38px}
+.onboarding-dialog h2{font-size:36px;margin:16px 0 10px}
+.onboarding-sub{color:#6e6e73;line-height:1.6;margin:0 0 28px}
+.onboarding-submit{width:100%;margin-top:22px}
+.onboarding-recover{width:100%;margin-top:12px}
+.onboarding-code-link{display:block;text-align:center;margin-top:20px;font-size:12px}
+.onboarding-code-field{margin-top:22px}
 
 .result-efficiency{display:flex;align-items:center;gap:20px;background:rgba(var(--ink-rgb),.04);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0 4px}
 .result-efficiency-moves{display:flex;flex-direction:column;gap:3px;min-width:52px}
@@ -269,8 +288,13 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .profile-name-row input{flex:1;min-width:0;height:46px;border:1px solid var(--line);border-radius:var(--radius-sm);background:rgba(var(--surface-rgb),.5);padding:0 16px;font:600 16px "Manrope";color:var(--ink);outline:0}
 .profile-name-row input:focus{border-color:var(--blue)}
 .profile-name-row .button{height:46px;padding:0 22px;font-size:11px;flex:none}
-.profile-id{margin:12px 0 0;font:500 12px "DM Sans";color:#86868b;letter-spacing:.04em}
-.profile-id strong{font:700 13px "Manrope";color:var(--ink);margin-left:4px}
+.profile-code-block{margin-top:18px;padding:16px;border-radius:var(--radius-sm);background:rgba(var(--ink-rgb),.04)}
+.profile-code-label{font:700 10px "Manrope";letter-spacing:.15em;text-transform:uppercase;color:#6e6e73;display:block;margin-bottom:8px}
+.profile-code-row{display:flex;align-items:center;gap:10px}
+.profile-code-value{font:700 26px "Manrope";letter-spacing:.12em;color:var(--ink)}
+.profile-copy-btn{border:1px solid var(--line);background:transparent;border-radius:8px;padding:7px 9px;cursor:pointer;color:#6e6e73;display:flex;align-items:center;transition:background .15s,color .15s}
+.profile-copy-btn:hover{background:rgba(var(--ink-rgb),.08);color:var(--ink)}
+.profile-code-hint{font:400 12px "DM Sans";color:#86868b;line-height:1.5;margin:8px 0 0}
 
 .profile-section .progress-summary{margin:0 0 24px}
 
@@ -310,6 +334,17 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
   .game-column{justify-self:start;max-width:680px}
   .leaderboard-section{grid-template-columns:1fr;gap:50px}
   .version-stamp{grid-column:1}
+}
+/* iPad-specifiek (portret + landscape) */
+@media(min-width:561px) and (max-width:900px){
+  .hero{padding:60px 5vw 80px}
+  .game-column{max-width:560px}
+  .puzzle-frame{padding:16px}
+  .puzzle-cover{inset:16px}
+  .game-topbar{margin:0 4px 14px}
+  .game-actions{margin-top:18px}
+  .stat strong{font-size:20px}
+  .onboarding-dialog{padding:38px}
 }
 @media(max-width:560px){
   .site-header{min-height:calc(74px + env(safe-area-inset-top))}

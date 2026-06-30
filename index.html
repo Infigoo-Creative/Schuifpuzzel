@@ -64,9 +64,10 @@
           <!-- Stap 1: Kies je spelvorm -->
           <div class="setup-mode-cards">
             <div class="mode-card" id="card-daily" tabindex="0" role="button" aria-pressed="false">
-              <div class="mode-card-header">
-                <strong class="mode-card-title">Dagelijkse Challenge</strong>
+              <div class="mode-card-icon">
+                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 8h18v15c0 6.627-4.03 12-9 12s-9-5.373-9-12V8Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M15 12h-5a2 2 0 0 0-2 2v3a8 8 0 0 0 7 7.937" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M33 12h5a2 2 0 0 1 2 2v3a8 8 0 0 1-7 7.937" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 35v5M17 41h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 20l2.5 2.5 5.5-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
+              <strong class="mode-card-title">Dagelijkse Challenge</strong>
               <span class="mode-card-sub">Elke dag een nieuwe puzzel. Iedereen speelt dezelfde uitdaging. Klim in de ranglijst.</span>
               <div class="mode-card-daily-info" id="daily-card-active" hidden>
                 <img id="daily-card-thumb" src="" alt="" class="mode-card-thumb">
@@ -80,6 +81,9 @@
             </div>
 
             <div class="mode-card" id="card-levels" tabindex="0" role="button" aria-pressed="false">
+              <div class="mode-card-icon">
+                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="5" y="30" width="10" height="14" rx="2.5" fill="currentColor" opacity="0.35"/><rect x="19" y="20" width="10" height="24" rx="2.5" fill="currentColor" opacity="0.65"/><rect x="33" y="9" width="10" height="35" rx="2.5" fill="currentColor"/></svg>
+              </div>
               <strong class="mode-card-title">Levels Uitdaging</strong>
               <span class="mode-card-sub">Kies je niveau, speel alle puzzels vrij en verzamel badges en voortgang.</span>
             </div>
@@ -103,19 +107,6 @@
               <span class="photo-picker-text">Kies je foto<small id="photo-picker-name">Papegaai</small></span>
               <span class="photo-picker-arrow">→</span>
             </button>
-          </div>
-
-          <div class="field" id="name-field">
-            <label for="name">Jouw naam</label>
-            <input id="name" name="name" maxlength="40" autocomplete="name" placeholder="Bijv. Lisa de Vries" required>
-          </div>
-
-          <div class="code-recovery">
-            <button type="button" id="have-code-link" class="text-button">Heb je al een code?</button>
-            <div class="field" id="code-field" hidden>
-              <label for="player-code">Jouw code</label>
-              <input id="player-code" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="123456" autocomplete="off">
-            </div>
           </div>
 
           <button class="button start-puzzle-button" id="setup-submit" type="submit" hidden>Start de puzzel <span>→</span></button>
@@ -236,7 +227,16 @@
         <input id="profile-name-input" type="text" maxlength="40" autocomplete="name" aria-label="Jouw naam">
         <button id="profile-name-save" class="button button-outline" type="button">Opslaan</button>
       </div>
-      <p class="profile-id">ID <strong id="profile-id-value"></strong></p>
+      <div class="profile-code-block">
+        <span class="profile-code-label">Jouw spelcode</span>
+        <div class="profile-code-row">
+          <strong id="profile-id-value" class="profile-code-value">–</strong>
+          <button id="profile-copy-code" type="button" class="profile-copy-btn" title="Code kopiëren">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <p class="profile-code-hint">Gebruik deze code op een ander apparaat om je voortgang te herstellen.</p>
+      </div>
     </section>
 
     <section class="profile-section">
@@ -268,6 +268,30 @@
     <p>Je huidige poging wordt beëindigd en je tijd gaat verloren. Weet je zeker dat je wilt stoppen?</p>
     <button id="confirm-stop-cancel" class="button start-puzzle-button" type="button" autofocus>Verder puzzelen <span>→</span></button>
     <button id="confirm-stop-confirm" class="button button-outline" type="button">Puzzel stoppen <span>→</span></button>
+  </dialog>
+
+  <dialog id="onboarding-dialog" class="onboarding-dialog">
+    <div class="onboarding-icon">
+      <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M19 10h18v18c0 7.18-4.03 13-9 13s-9-5.82-9-13V10Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M19 14h-6a2 2 0 0 0-2 2v4a9 9 0 0 0 8 8.944" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M37 14h6a2 2 0 0 1 2 2v4a9 9 0 0 1-8 8.944" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M28 41v5M20 47h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </div>
+    <p class="eyebrow"><span></span> WELKOM BIJ SCHUIFPUZZEL</p>
+    <h2>Kies een naam.</h2>
+    <p class="onboarding-sub">Zo worden je scores en voortgang bewaard — geen account nodig.</p>
+    <form id="onboarding-form">
+      <div class="field">
+        <label for="onboarding-name">Jouw naam</label>
+        <input id="onboarding-name" name="name" maxlength="40" autocomplete="name" placeholder="Bijv. Lisa de Vries" required>
+      </div>
+      <button class="button start-puzzle-button onboarding-submit" type="submit">Aan de slag <span>→</span></button>
+    </form>
+    <div id="onboarding-code-section" hidden>
+      <div class="field onboarding-code-field">
+        <label for="onboarding-code">Jouw spelcode</label>
+        <input id="onboarding-code" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="123456" autocomplete="off">
+      </div>
+      <button class="button button-outline onboarding-recover" id="onboarding-recover-btn" type="button">Code herstellen <span>→</span></button>
+    </div>
+    <button type="button" id="onboarding-have-code" class="text-button onboarding-code-link">Ik heb al een spelerscode →</button>
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
