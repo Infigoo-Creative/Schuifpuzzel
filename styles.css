@@ -214,7 +214,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .mode-card-title{font:700 15px "Manrope";display:block}
 .mode-card-sub{font-size:13px;line-height:1.55;color:#6e6e73;font-weight:400}
 .mode-card.is-selected{border-color:transparent;transform:translateY(-2px)}
-#card-daily.is-selected{background:linear-gradient(135deg,var(--logo-orange),var(--magenta));color:#fff;box-shadow:0 14px 30px rgba(255,122,69,.35)}
+#card-daily.is-selected{background:linear-gradient(135deg,var(--logo-orange),#ff9f0a);color:#fff;box-shadow:0 14px 30px rgba(255,122,69,.4)}
 #card-levels.is-selected{background:linear-gradient(135deg,var(--blue),var(--violet));color:#fff;box-shadow:0 14px 30px rgba(94,92,230,.35)}
 .mode-card.is-selected .mode-card-sub{color:rgba(255,255,255,.8)}
 .mode-card-daily-info{display:flex;align-items:center;gap:8px;font:500 12px "Manrope";color:rgba(255,122,69,.9);margin-top:4px}
