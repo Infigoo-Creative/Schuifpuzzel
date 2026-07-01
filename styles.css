@@ -249,7 +249,7 @@ h1 em{font-family:"Manrope",sans-serif;font-style:normal;font-weight:700;backgro
 .onboarding-sub{color:#6e6e73;line-height:1.6;margin:0 0 28px}
 .onboarding-submit{width:100%;margin-top:22px}
 .onboarding-recover{width:100%;margin-top:12px}
-.onboarding-code-link{display:block;text-align:center;margin-top:20px;font-size:12px}
+.onboarding-code-link{display:block;width:100%;text-align:center;margin-top:20px;font-size:12px}
 .onboarding-code-field{margin-top:22px}
 
 .result-efficiency{display:flex;align-items:center;gap:20px;background:rgba(var(--ink-rgb),.04);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0 4px}

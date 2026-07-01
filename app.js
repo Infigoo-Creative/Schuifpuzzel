@@ -987,25 +987,16 @@ setupForm.addEventListener('submit', (event) => {
   const player = getPlayer();
   if (player) {
     proceedToGame(player.name);
+  } else {
+    // Nog geen spelersprofiel: pas nu, na de spelvorm/niveau/foto-keuze, om een naam vragen.
+    onboardingDialog?.showModal();
+    $('#onboarding-name')?.focus();
   }
 });
 
 function handleCodeDialogClose() {
-  const name = codeDialog.dataset.pendingName;
-  const fromOnboarding = codeDialog.dataset.fromOnboarding === 'true';
-  delete codeDialog.dataset.fromOnboarding;
+  delete codeDialog.dataset.pendingName;
   codeDialog.close();
-  if (!name) return;
-  if (fromOnboarding) {
-    // Speler net geregistreerd via onboarding: toon spelkeuze, start nog geen spel
-    state.player = { name, code: getPlayer()?.code ?? null };
-    updateProfileUI(name);
-    renderDailyCard();
-    renderProgress();
-    coverSubtitle.textContent = 'Kies je spelvorm en begin te schuiven';
-  } else {
-    proceedToGame(name);
-  }
 }
 $('#confirm-code').addEventListener('click', handleCodeDialogClose);
 $('#close-code-dialog').addEventListener('click', handleCodeDialogClose);
@@ -1262,14 +1253,13 @@ renderGallery();
 updateCoverPreview();
 loadLeaderboard(state.size);
 
+// Onboarding verschijnt niet meer meteen bij binnenkomst — nieuwe bezoekers zien eerst
+// gewoon de homepage en kiezen pas daarna een spelvorm, niveau en foto. De naam wordt pas
+// gevraagd zodra ze op "Start puzzel" klikken (zie setupForm submit-handler hieronder).
 const existingPlayer = getPlayer();
 if (existingPlayer) {
   state.player = { name: existingPlayer.name, code: existingPlayer.code };
   updateProfileUI(existingPlayer.name);
-  coverSubtitle.textContent = 'Kies je spelvorm en begin te schuiven';
-} else {
-  // Eerste bezoek: toon onboarding
-  onboardingDialog?.showModal();
 }
 syncFromServer().then(() => {
   renderProgress();
@@ -1294,13 +1284,10 @@ if (onboardingDialog) {
     }
     const { code } = await registerPlayer(name);
     onboardingDialog.close();
-    state.player = { name, code };
-    updateProfileUI(name);
     renderProgress();
-    renderDailyCard();
+    proceedToGame(name); // puzzel start direct, zonder extra klik
     codeDisplay.textContent = code;
     codeDialog.dataset.pendingName = name;
-    codeDialog.dataset.fromOnboarding = 'true';
     codeDialog.showModal();
   });
 
@@ -1321,10 +1308,8 @@ if (onboardingDialog) {
       return;
     }
     onboardingDialog.close();
-    state.player = { name: recovered.name, code: recovered.code };
-    updateProfileUI(recovered.name);
     renderProgress();
-    renderDailyCard();
+    proceedToGame(recovered.name); // puzzel start direct, zonder extra klik
   });
 }
 
