@@ -1,10 +1,14 @@
-# Schuifpuzzel
+# Slideo — Schuifpuzzel
 
 Een online schuifpuzzel met instelbare moeilijkheidsgraad (3×3 t/m 6×6), een kiesgalerij met 9 foto's, timer, zettenteller, applaus + confetti bij het oplossen, een gedeelde top 10 per niveau (met rank-context als je daarbuiten valt), en voortgang die bewaard blijft via een persoonlijke 6-cijferige code (geen account nodig).
+
+**Naamgeving:** "Slideo" is de merknaam (logo, `<title>`, `manifest.json`); "schuifpuzzel" gebruiken we verder als generieke omschrijving van het spelconcept (bijv. in alt-teksten en meta-omschrijving) — dat is bewust, geen inconsistentie.
 
 ## Lokaal bekijken
 
 Open `index.html` direct in de browser. Zonder PHP-server werkt de puzzel volledig, maar wordt de ranglijst alleen lokaal (per browser, via `localStorage`) opgeslagen — zie "Scores en persistentie" hieronder voor wat dat in de praktijk betekent.
+
+Voor een volledige test inclusief de PHP-backend (gedeelde ranglijst, spelerscodes): start een lokale PHP-server vanuit de projectmap, bijvoorbeeld `php -S localhost:8932`, en open die URL in de browser. `_devserver.py` (niet in git, lokaal-only) is een alternatief zonder PHP — een kale statische server zonder caching, handig om snel te zien of bestanden goed laden, maar dan werkt alleen de `localStorage`-fallback.
 
 ## Online zetten
 
@@ -36,21 +40,36 @@ De meegeleverde `.htaccess`-bestanden blokkeren op Apache directe toegang tot `c
 - `api-client.js` — praat met `api.php`, met automatische fallback naar `localStorage` (inclusief dezelfde rank/context-structuur).
 - `progress.js` — clientside state voor de speler-code en voltooide foto×niveau-combinaties, praat met `progress.php`.
 - `moderation.js` — clientside blacklist-check voor grove/seksistische namen (directe feedback; `shared.php` is de echte poortwachter).
+- `finish-lines.js` — willekeurige eindteksten na het oplossen, gegroepeerd per prestatie (nieuw record, top 3, top 10, net gemist, persoonlijk record, normaal); nieuwe tekst toevoegen kan zonder `app.js` aan te raken.
 - `shared.php` — gedeelde constanten/helpers (toegestane formaten/foto's, blacklist, JSON-bestanden lezen/schrijven) voor `api.php` en `progress.php`.
 - `api.php`, `progress.php`, `admin.php`, `config.php` — backend voor de gedeelde ranglijst, voortgang en beheer.
 - `manifest.json`, `assets/icon*.png`, `assets/apple-touch-icon.png` — "toevoegen aan beginscherm"/PWA-iconen voor mobiel (zie ook de `safe-area-top`-balk en headerpadding in `styles.css` voor de notch/camera-uitsparing).
-- `version.json` — automatisch gegenereerd build-nummer + datum (zie `.git/hooks/pre-commit`), getoond als klein stempel onderaan de pagina.
-- `BACKLOG.md` — ideeën voor latere uitbreidingen; alleen ter inspiratie, niet automatisch uitvoeren.
+- `version.json` — automatisch gegenereerd build-nummer + datum, getoond als klein stempel onderaan de pagina. Wordt opgehoogd door een lokale git-hook (`.git/hooks/pre-commit`) — **die hook zit niet in git zelf** (hooks migreren nooit mee via clone/pull), dus op een nieuwe werkplek moet hij desgewenst opnieuw aangemaakt worden. Ontbreekt hij, dan werkt de site prima maar blijft het versiestempel gewoon op het laatste getal staan — puur cosmetisch, geen functioneel risico.
+- `WISHLIST.md` — ideeën voor latere uitbreidingen (klein/middel/groot, met waarde/impact/complexiteit); alleen ter inspiratie, niet automatisch uitvoeren.
+
+## Onboarding: wanneer verschijnt de naam-pop-up?
+
+De homepage toont bij binnenkomst altijd meteen de titel, introtekst en de twee moduskaarten (Dagelijkse Challenge / Levels Uitdaging) — er wordt nooit iets gevraagd voordat een bezoeker zelf een keuze maakt. Pas wanneer iemand spelvorm → niveau → foto heeft gekozen en op **"Start puzzel"** klikt, controleert `requestStartPuzzel()` (in `app.js`) of er al een speler bestaat (`getPlayer()`):
+
+- **Bestaat er al een speler?** De puzzel (en de klok) start meteen — geen pop-ups.
+- **Nog geen speler?** Eerst verschijnt de naam-pop-up ("Kies je spelersnaam", knop "Opslaan").
+  Na opslaan verschijnt direct de code-pop-up ("Bewaar je spelerscode"). **Pas na een klik op
+  "Begrepen, start puzzel" start `proceedToGame()` de puzzel en begint de klok te lopen** — zo
+  verliest niemand tijd terwijl hij zijn naam intypt of zijn code nog moet opschrijven.
+
+Dit betekent ook dat de klok bewust *niet* start bij: het klikken op "Start puzzel" zelf, het openen
+van de naam-pop-up, het klikken op "Opslaan", of het tonen van de code-pop-up — alleen de laatste
+bevestiging telt.
 
 ## Voortgang zonder account
 
-Bij de eerste keer naam invullen genereert de server (via `progress.php`) een unieke 6-cijferige code, die lokaal (`localStorage`) onthouden wordt — op dat apparaat/browser is er dus nooit een code nodig. Voltooi je een foto op een niveau (los van leaderboard-positie, gewoon: opgelost), dan wordt die combinatie als "uitgespeeld" gemarkeerd:
+Bij het invullen van een naam genereert de server (via `progress.php`) een unieke 6-cijferige code, die lokaal (`localStorage`) onthouden wordt — op dat apparaat/browser is er dus nooit een code nodig. Voltooi je een foto op een niveau (los van leaderboard-positie, gewoon: opgelost), dan wordt die combinatie als "uitgespeeld" gemarkeerd:
 
 - een trofee-badge op de foto in de kiesgalerij (per geselecteerd niveau),
 - stipjes onder elke moeilijkheidsgraad (hoeveel van de 9 foto's op dat niveau klaar zijn),
 - een totaalbalk op de hoofdpagina ("X van 36 levels voltooid").
 
-Op een ander apparaat/browser klik je op "Heb je al een code?" en vul je de code in — de voortgang van die code wordt dan opgehaald en samengevoegd met wat er lokaal al stond. Zonder PHP-server (lokale demo) wordt een code alleen lokaal gegenereerd; cross-device herstel werkt dan niet (logisch, er is dan niets om te delen).
+Op een ander apparaat/browser klik je in de naam-pop-up op "Ik heb al een spelerscode" en vul je de code in — de voortgang van die code wordt dan opgehaald en samengevoegd met wat er lokaal al stond. Zonder PHP-server (lokale demo) wordt een code alleen lokaal gegenereerd; cross-device herstel werkt dan niet (logisch, er is dan niets om te delen).
 
 Zodra de naam de eerste keer is opgeslagen, verschijnt rechtsboven in de header een profielknop (👤 + naam). Daar — niet meer bij de puzzelinstellingen — beheer je je naam en zie je je ID en een paar lichte statistieken (puzzels gespeeld, top 10/3-noteringen, vandaag gespeeld, gespeeld per niveau). Die statistieken staan in `progress.js` (`recordPlay`/`getStats`, key `schuifpuzzel-stats`) en tellen vanaf het moment dat deze functionaliteit is toegevoegd, niet terugwerkend. De knop bij de puzzel zelf ("Puzzelinstellingen wijzigen") gaat sindsdien alleen nog over niveau en foto.
 

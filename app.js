@@ -500,42 +500,6 @@ function getDailyCombo() {
   return DAILY_SEQUENCE[dayIndex];
 }
 
-const SIZE_LABELS = { 3: 'Makkelijk · 3 × 3', 4: 'Gemiddeld · 4 × 4', 5: 'Moeilijk · 5 × 5', 6: 'Expert · 6 × 6' };
-
-function renderDailyCard() {
-  const activeEl = $('#daily-card-active');
-  const doneEl = $('#daily-card-done');
-  if (!activeEl || !doneEl) return;
-
-  const player = getPlayer();
-  if (!player) {
-    activeEl.hidden = true;
-    doneEl.hidden = true;
-    return;
-  }
-
-  const combo = getDailyCombo();
-  const gallery = GALLERY.find((g) => g.id === combo.photo);
-  const record = getDailyRecord(dailyDateKey());
-  const done = !!record;
-
-  const thumbEl = $('#daily-card-thumb');
-  if (thumbEl) { thumbEl.src = gallery?.src ?? ''; thumbEl.alt = gallery?.name ?? ''; }
-  const photoEl = $('#daily-card-photo');
-  if (photoEl) photoEl.textContent = gallery?.name ?? '';
-  const levelEl = $('#daily-card-level');
-  if (levelEl) levelEl.textContent = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
-
-  activeEl.hidden = done;
-  doneEl.hidden = !done;
-
-  if (done) {
-    const stars = '★'.repeat(record.stars ?? 0) + '☆'.repeat(5 - (record.stars ?? 0));
-    const summaryEl = $('#daily-done-summary');
-    if (summaryEl) summaryEl.textContent = stars;
-  }
-}
-
 // --- Einde dagelijkse helpers ---
 
 function starSVG(filled) {
@@ -642,7 +606,6 @@ async function finishGame() {
       if (!prevRecord || Math.round(state.elapsed) < prevRecord.time) {
         setDailyRecord(dailyDateKey(), { rank: dailyRank, time: Math.round(state.elapsed), moves: state.moves, stars: computeStars(state.moves, state.size) });
       }
-      renderDailyCard();
       loadLeaderboard('daily');
     } catch { /* silent — reguliere score is al opgeslagen */ }
   }
@@ -685,8 +648,8 @@ async function finishGame() {
   if (isDaily) {
     const displayRank = dailyRank ?? rank;
     $('#result-eyebrow-text').textContent = displayRank > 0 && displayRank <= 10
-      ? `DAGELIJKSE UITDAGING · ${formatDailyDate()} · PLEK ${displayRank}`
-      : `DAGELIJKSE UITDAGING · ${formatDailyDate()}`;
+      ? `DAGELIJKSE CHALLENGE · ${formatDailyDate()} · PLEK ${displayRank}`
+      : `DAGELIJKSE CHALLENGE · ${formatDailyDate()}`;
   } else {
     $('#result-eyebrow-text').textContent = rank > 0 && rank <= 10
       ? `PUZZEL VOLTOOID · PLEK ${rank}`
@@ -890,9 +853,6 @@ setupForm.addEventListener('change', (event) => {
 });
 
 
-// Lege stub — naam/code-velden zijn verplaatst naar de onboarding-dialoog.
-function updateSetupFormForExistingPlayer() {}
-
 // Houdt de profielknop + profielpopup in sync met de huidige speler (naam/ID). Wordt
 // aangeroepen na registratie, na het starten van een puzzel en na een naamwijziging.
 function updateProfileUI(name) {
@@ -901,7 +861,6 @@ function updateProfileUI(name) {
   profileButtonName.textContent = name;
   profileNameInput.value = name;
   profileIdValue.textContent = player ? player.code : '';
-  updateSetupFormForExistingPlayer();
 }
 
 // Klein, herbruikbaar NxN-roostericoontje (een mini-puzzelbord) — gebruikt voor "puzzels
@@ -949,7 +908,6 @@ function renderProfileStats() {
 function proceedToGame(name) {
   state.player = { name, code: getPlayer()?.code ?? null };
   updateProfileUI(name);
-  renderDailyCard();
   updateCoverPreview();
   setupForm.hidden = true;
   playerBar.hidden = false;
@@ -1162,12 +1120,6 @@ document.querySelectorAll('input[name=size]').forEach((radio) => {
   });
 });
 
-$('#daily-done-leaderboard')?.addEventListener('click', (e) => {
-  e.stopPropagation();
-  loadLeaderboard('daily');
-  document.querySelector('.leaderboard-section')?.scrollIntoView({ behavior: 'smooth' });
-});
-
 openGalleryButton.addEventListener('click', () => {
   renderGallery();
   galleryDialog.showModal();
@@ -1278,7 +1230,6 @@ syncFromServer().then(() => {
   renderGallery();
 });
 renderProgress();
-renderDailyCard();
 
 // --- Onboarding-dialoog ---
 if (onboardingDialog) {
