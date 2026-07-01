@@ -962,6 +962,20 @@ function proceedToGame(name) {
   }
 }
 
+// Beslist wat er gebeurt zodra spelvorm/niveau/foto gekozen zijn: bestaat er al een
+// speler, dan mag de puzzel (en de klok) meteen starten. Bestaat er nog geen speler,
+// dan moet eerst de naam-pop-up (en daarna de code-pop-up) worden afgerond — de puzzel
+// zelf start pas na expliciete bevestiging van de spelerscode (zie codeDialog hieronder).
+function requestStartPuzzle() {
+  const player = getPlayer();
+  if (player) {
+    proceedToGame(player.name);
+  } else {
+    onboardingDialog?.showModal();
+    $('#onboarding-name')?.focus();
+  }
+}
+
 setupForm.addEventListener('submit', (event) => {
   event.preventDefault();
   const isDailySelected = $('#card-daily')?.classList.contains('is-selected');
@@ -984,19 +998,17 @@ setupForm.addEventListener('submit', (event) => {
     state.size = Number(pickedSize);
     state.isDailyChallenge = false;
   }
-  const player = getPlayer();
-  if (player) {
-    proceedToGame(player.name);
-  } else {
-    // Nog geen spelersprofiel: pas nu, na de spelvorm/niveau/foto-keuze, om een naam vragen.
-    onboardingDialog?.showModal();
-    $('#onboarding-name')?.focus();
-  }
+  requestStartPuzzle();
 });
 
+// Bevestiging van de code-pop-up is het enige moment waarop een NIEUWE speler de puzzel
+// (en dus de klok) daadwerkelijk start — zie onboardingForm-submit hieronder, dat deze
+// pop-up toont zonder alvast proceedToGame() aan te roepen.
 function handleCodeDialogClose() {
+  const name = codeDialog.dataset.pendingName;
   delete codeDialog.dataset.pendingName;
   codeDialog.close();
+  if (name) proceedToGame(name);
 }
 $('#confirm-code').addEventListener('click', handleCodeDialogClose);
 $('#close-code-dialog').addEventListener('click', handleCodeDialogClose);
@@ -1285,7 +1297,8 @@ if (onboardingDialog) {
     const { code } = await registerPlayer(name);
     onboardingDialog.close();
     renderProgress();
-    proceedToGame(name); // puzzel start direct, zonder extra klik
+    // Puzzel en klok starten pas zodra de speler de code-pop-up bevestigt met
+    // "Begrepen, start puzzel" — zie handleCodeDialogClose hierboven.
     codeDisplay.textContent = code;
     codeDialog.dataset.pendingName = name;
     codeDialog.showModal();
